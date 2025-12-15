@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# 🎹 Piano Note Flashcards
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small but focused **piano note training web app** built with **React, TypeScript, Tailwind CSS, Vite, VexFlow, and Tone.js**.
 
-Currently, two official plugins are available:
+The goal is simple: **get faster at recognising notes on the stave** — visually and aurally — without unnecessary clutter.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🎼 **Treble clef note flashcards** rendered with VexFlow
+- 🔊 **Audio playback** of notes using Tone.js
+- 🧠 Instant feedback with **score + streak tracking**
+- 🎯 Configurable **note ranges** (C4–B4, C4–C5, C4–C6)
+- ⚡ Fast dev experience via **Vite**
+- 🎨 Clean, modern UI using **Tailwind CSS**
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧩 Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React + TypeScript** — UI and state management
+- **Vite** — fast dev server & build tooling
+- **Tailwind CSS** — styling
+- **VexFlow** — music notation rendering
+- **Tone.js** — Web Audio (note playback)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm (or pnpm / yarn)
+
+### Install & Run
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Then open the local dev URL shown in your terminal.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+> ⚠️ Audio will only play **after your first interaction** (browser security restriction).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🧠 How It Works
+
+1. A random note is generated within the selected range
+2. The note is rendered on a treble stave
+3. You identify the note by clicking its name
+4. The correct note is played back for ear training
+5. Score and streak update automatically
+
+This is intentionally **measure-free** notation — accuracy matters, not rhythm.
+
+---
+
+## 🔮 Planned Improvements
+
+- 🎹 On-screen piano keyboard (white + black keys)
+- 🎛 Bass clef toggle & lower note ranges
+- ♯ Sharps, flats, and key signatures
+- 🎧 Ear-training mode (sound-only)
+- 🎼 MIDI keyboard input support
+- 🧠 Spaced repetition for weak notes
+
+---
+
+## 🧪 Development Notes
+
+- VexFlow voices run in **SOFT mode** to avoid incomplete-measure errors
+- Audio playback uses a lightweight synth (no heavy samples yet)
+- The project favours **clarity over complexity** — no overengineering
+
+---
+
+## 📜 License
+
+MIT — use it, break it, improve it.
+
+---
+
+Built for practice, not perfection 🎶
