@@ -1,37 +1,8 @@
 @import "tailwindcss";
 
-/* Black key positioning for responsive piano 
-   Mobile: white keys are w-9 (36px), black keys are w-6 (24px)
-   Desktop: white keys are w-12 (48px), black keys are w-8 (32px)
-   Black keys should be centered between their white keys
-*/
-
-/* Mobile positioning - center 24px black key between 36px white keys */
-.black-key-0 { left: calc(1 * 36px - 12px); } /* Between C and D */
-.black-key-1 { left: calc(2 * 36px - 12px); } /* Between D and E */
-.black-key-2 { left: calc(4 * 36px - 12px); } /* Between F and G */
-.black-key-3 { left: calc(5 * 36px - 12px); } /* Between G and A */
-.black-key-4 { left: calc(6 * 36px - 12px); } /* Between A and B */
-.black-key-5 { left: calc(8 * 36px - 12px); } /* Next octave C# */
-.black-key-6 { left: calc(9 * 36px - 12px); }
-.black-key-7 { left: calc(11 * 36px - 12px); }
-.black-key-8 { left: calc(12 * 36px - 12px); }
-.black-key-9 { left: calc(13 * 36px - 12px); }
-.black-key-10 { left: calc(15 * 36px - 12px); }
-.black-key-11 { left: calc(16 * 36px - 12px); }
-
-/* Desktop positioning - center 32px black key between 48px white keys */
+/* Black key responsive positioning using CSS variable */
 @media (min-width: 640px) {
-  .black-key-0 { left: calc(1 * 48px - 16px); }
-  .black-key-1 { left: calc(2 * 48px - 16px); }
-  .black-key-2 { left: calc(4 * 48px - 16px); }
-  .black-key-3 { left: calc(5 * 48px - 16px); }
-  .black-key-4 { left: calc(6 * 48px - 16px); }
-  .black-key-5 { left: calc(8 * 48px - 16px); }
-  .black-key-6 { left: calc(9 * 48px - 16px); }
-  .black-key-7 { left: calc(11 * 48px - 16px); }
-  .black-key-8 { left: calc(12 * 48px - 16px); }
-  .black-key-9 { left: calc(13 * 48px - 16px); }
-  .black-key-10 { left: calc(15 * 48px - 16px); }
-  .black-key-11 { left: calc(16 * 48px - 16px); }
+  .sm\:!left-\[calc\(\(var\(--key-index\)\+1\)\*3rem-1rem\)\] {
+    left: calc((var(--key-index) + 1) * 3rem - 1rem) !important;
+  }
 }

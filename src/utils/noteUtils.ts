@@ -136,6 +136,18 @@ export function isBlackKey(midi: number): boolean {
   return pc === 1 || pc === 3 || pc === 6 || pc === 8 || pc === 10;
 }
 
+export function getBlackKeyIndex(midi: number): number {
+  // Returns the index within an octave (0-4) for black keys
+  // C# = 0, D# = 1, F# = 2, G# = 3, A# = 4
+  const pc = midiToPitchClass(midi);
+  if (pc === 1) return 0; // C#
+  if (pc === 3) return 1; // D#
+  if (pc === 6) return 2; // F#
+  if (pc === 8) return 3; // G#
+  if (pc === 10) return 4; // A#
+  return -1; // Not a black key
+}
+
 export function whiteKeyLabel(midi: number, pref: AccidentalPref): string {
   const spelling = spellMidi(midi, pref);
   return `${spelling.letter}`;

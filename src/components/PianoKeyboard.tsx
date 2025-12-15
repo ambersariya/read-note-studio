@@ -1,6 +1,6 @@
 import type { AccidentalPref, Note } from "../types";
 import { useMemo } from "react";
-import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi } from "../utils/noteUtils";
+import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi, getBlackKeyIndex } from "../utils/noteUtils";
 
 interface PianoKeyboardProps {
   minMidi: number;
@@ -37,16 +37,26 @@ export function PianoKeyboard({
   const whiteKeys = useMemo(() => pianoMidi.filter((m) => !isBlackKey(m)), [pianoMidi]);
 
   const blackKeys = useMemo(() => {
-    // For each black key, compute its position index between white keys.
+    // For each black key, compute its CSS class index based on white key position
     const whites = whiteKeys;
-    const positions: { midi: number; leftIndex: number }[] = [];
+    const positions: { midi: number; cssIndex: number }[] = [];
     for (const m of pianoMidi) {
       if (!isBlackKey(m)) continue;
-      // Find the nearest white key below
+      
+      // Find the white key immediately below this black key
       let below = m - 1;
       while (below >= 0 && isBlackKey(below)) below--;
-      const leftIndex = Math.max(0, whites.indexOf(below));
-      positions.push({ midi: m, leftIndex });
+      
+      const whiteKeyIndex = whites.indexOf(below);
+      if (whiteKeyIndex === -1) continue; // Skip if white key not found
+      
+      // The black key sits between this white key and the next one
+      // So the CSS position is based on the white key index
+      // C# (pc=1) comes after C (index of C)
+      // D# (pc=3) comes after D (index of D)
+      // F# (pc=6) comes after F (index of F)
+      // etc.
+      positions.push({ midi: m, cssIndex: whiteKeyIndex });
     }
     return positions;
   }, [pianoMidi, whiteKeys]);
@@ -89,20 +99,30 @@ export function PianoKeyboard({
           </div>
 
           {/* Black keys */}
-          {blackKeys.map(({ midi, leftIndex }) => {
+          {blackKeys.map(({ midi, cssIndex }) => {
             const active = midi === currentNote.midi;
             const enabled = includeAccidentals && isInAnswerSet(midi);
+            
             return (
               <button
                 key={midi}
                 onClick={() => onKeyPress(midi)}
                 disabled={!enabled}
                 title={`${noteLabel({ midi, spelling: spellMidi(midi, keySigPref) })}`}
+                style={{
+                  // Mobile: (index + 1) * 36px - 12px
+                  // Desktop: (index + 1) * 48px - 16px  
+                  left: `calc((${cssIndex + 1}) * 2.25rem - 0.75rem)`,
+                }}
                 className={
                   `absolute top-3 h-20 w-6 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
-                  `sm:h-24 sm:w-8 black-key-${leftIndex}`
+                  `sm:h-24 sm:w-8 sm:!left-[calc((var(--key-index)+1)*3rem-1rem)]`
                 }
+                {...({ style: { 
+                  left: `calc((${cssIndex + 1}) * 2.25rem - 0.75rem)`,
+                  '--key-index': cssIndex 
+                } } as any)}
               >
                 {active && showHints ? <div className="mx-auto mt-2 h-2 w-4 rounded bg-emerald-400/70 sm:w-6" /> : null}
               </button>
