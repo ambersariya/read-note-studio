@@ -53,5 +53,10 @@ export async function ensureAudioStarted(): Promise<void> {
 
 export function playMidi(midi: number): void {
   const freq = Tone.Frequency(midi, "midi").toFrequency();
-  synth.triggerAttackRelease(freq, "1s");
+  
+  // Release any currently playing note at this frequency first
+  synth.triggerRelease(freq);
+  
+  // Then play the note with a short duration
+  synth.triggerAttackRelease(freq, "0.3");
 }

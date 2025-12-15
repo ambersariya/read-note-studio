@@ -114,11 +114,8 @@ export default function App() {
 
     const correct = answerMidi === current.midi;
 
-    // Feedback: play the correct note (and a quick hint for wrong answers)
-    playMidi(current.midi);
-    if (!correct) {
-      window.setTimeout(() => playMidi(answerMidi), 140);
-    }
+    // Only play the clicked note
+    playMidi(answerMidi);
 
     setStats((s) => updateStats(s, current.midi, correct));
 

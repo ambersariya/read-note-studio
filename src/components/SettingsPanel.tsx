@@ -42,23 +42,43 @@ export function SettingsPanel({
       <h2 className="text-base font-semibold">Settings</h2>
 
       <div className="mt-4 space-y-4">
-        <label className="block">
-          <div className="mb-1 text-sm font-semibold text-slate-200">Difficulty Level</div>
-          <select
-            value={difficulty}
-            onChange={(e) => onDifficultyChange(e.target.value as DifficultyLevel)}
-            className="w-full rounded-xl bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-white/10 focus:outline-none"
-          >
-            <option value="beginner">🌱 Beginner (natural notes only)</option>
-            <option value="intermediate">📚 Intermediate (with accidentals)</option>
-            <option value="advanced">🎓 Advanced (full range)</option>
-          </select>
+        <div className="block">
+          <div className="mb-2 text-sm font-semibold text-slate-200">Difficulty Level</div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onDifficultyChange("beginner")}
+              className={
+                "flex-1 rounded-xl px-3 py-2 text-sm font-semibold ring-1 ring-white/10 " +
+                (difficulty === "beginner" ? "bg-white/15" : "bg-white/5 hover:bg-white/10")
+              }
+            >
+              🌱 Beginner
+            </button>
+            <button
+              onClick={() => onDifficultyChange("intermediate")}
+              className={
+                "flex-1 rounded-xl px-3 py-2 text-sm font-semibold ring-1 ring-white/10 " +
+                (difficulty === "intermediate" ? "bg-white/15" : "bg-white/5 hover:bg-white/10")
+              }
+            >
+              📚 Intermediate
+            </button>
+            <button
+              onClick={() => onDifficultyChange("advanced")}
+              className={
+                "flex-1 rounded-xl px-3 py-2 text-sm font-semibold ring-1 ring-white/10 " +
+                (difficulty === "advanced" ? "bg-white/15" : "bg-white/5 hover:bg-white/10")
+              }
+            >
+              🎓 Advanced
+            </button>
+          </div>
           <div className="mt-2 text-xs text-slate-400">
             {difficulty === "beginner" && "Perfect for starting out! No sharps or flats."}
             {difficulty === "intermediate" && "Includes sharps and flats for extra challenge."}
             {difficulty === "advanced" && "Full chromatic range with all accidentals."}
           </div>
-        </label>
+        </div>
 
         <label className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
           <div>
