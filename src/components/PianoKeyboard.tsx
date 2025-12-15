@@ -84,15 +84,15 @@ export function PianoKeyboard({
                   disabled={!enabled}
                   title={`${whiteKeyLabel(m, keySigPref)}${midiToOctave(m)}`}
                   className={
-                    "relative h-28 w-9 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
+                    "relative h-32 w-11 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
                     "hover:bg-white active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed " +
-                    "sm:h-36 sm:w-12"
+                    "sm:h-44 sm:w-16"
                   }
                 >
                   <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
                     {whiteKeyLabel(m, keySigPref)}
                   </div>
-                  {active && showHints ? <div className="absolute inset-x-1 top-1 h-2 rounded bg-emerald-500/60" /> : null}
+                  {active && showHints ? <div className="absolute inset-x-1 top-1 h-3 rounded bg-emerald-500/60" /> : null}
                 </button>
               );
             })}
@@ -110,21 +110,21 @@ export function PianoKeyboard({
                 disabled={!enabled}
                 title={`${noteLabel({ midi, spelling: spellMidi(midi, keySigPref) })}`}
                 style={{
-                  // Mobile: (index + 1) * 36px - 12px
-                  // Desktop: (index + 1) * 48px - 16px  
-                  left: `calc((${cssIndex + 1}) * 2.25rem - 0.75rem)`,
+                  // Mobile: (index + 1) * 44px - 14px
+                  // Desktop: (index + 1) * 64px - 20px  
+                  left: `calc((${cssIndex + 1}) * 2.75rem - 0.875rem)`,
                 }}
                 className={
-                  `absolute top-3 h-20 w-6 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
+                  `absolute top-3 h-24 w-7 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
-                  `sm:h-24 sm:w-8 sm:black-key-desktop`
+                  `sm:h-32 sm:w-10 sm:black-key-desktop`
                 }
                 {...({ style: { 
-                  left: `calc((${cssIndex + 1}) * 2.25rem - 0.75rem)`,
+                  left: `calc((${cssIndex + 1}) * 2.75rem - 0.875rem)`,
                   '--key-index': cssIndex 
                 } } as any)}
               >
-                {active && showHints ? <div className="mx-auto mt-2 h-2 w-4 rounded bg-emerald-400/70 sm:w-6" /> : null}
+                {active && showHints ? <div className="mx-auto mt-2 h-2 w-5 rounded bg-emerald-400/70 sm:w-7" /> : null}
               </button>
             );
           })}

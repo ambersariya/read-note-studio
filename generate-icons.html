@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <h2>PWA Icon Generator</h2>
+  <p>Right-click each canvas and "Save Image As..." to download</p>
+  
+  <div>
+    <h3>192x192 Icon</h3>
+    <canvas id="icon192" width="192" height="192"></canvas>
+  </div>
+  
+  <div>
+    <h3>512x512 Icon</h3>
+    <canvas id="icon512" width="512" height="512"></canvas>
+  </div>
+  
+  <div>
+    <h3>180x180 Icon (iOS)</h3>
+    <canvas id="icon180" width="180" height="180"></canvas>
+  </div>
+
+  <script>
+    function drawIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Piano emoji/symbol
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${size * 0.6}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🎹', size / 2, size / 2);
+    }
+    
+    drawIcon('icon192', 192);
+    drawIcon('icon512', 512);
+    drawIcon('icon180', 180);
+  </script>
+</body>
+</html>

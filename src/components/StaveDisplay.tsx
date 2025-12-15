@@ -21,14 +21,14 @@ export function StaveDisplay({ note, clef, keySig }: StaveDisplayProps) {
     const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Flow;
 
     // Make stave responsive to container width
-    const width = Math.min(el.clientWidth || 520, 520);
+    const width = Math.min(el.clientWidth || 600, 600);
     const staveWidth = width - 40; // 20px padding on each side
 
     const renderer = new Renderer(el, Renderer.Backends.SVG);
-    renderer.resize(width, 200);
+    renderer.resize(width, 240);
     const context = renderer.getContext();
 
-    const stave = new Stave(20, 50, staveWidth);
+    const stave = new Stave(20, 60, staveWidth);
     stave.addClef(clef);
     stave.addKeySignature(keySig.vex);
     stave.setContext(context).draw();

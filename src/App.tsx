@@ -253,12 +253,11 @@ export default function App() {
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            Piano Note Flashcards
+            ReadNote
             <span className="ml-2 text-xs font-normal text-slate-400 sm:ml-3 sm:text-sm">v{APP_VERSION}</span>
           </h1>
           <p className="mt-1 text-sm text-slate-300 sm:text-base">
-            Identify notes on the stave. Click the on-screen piano or play a MIDI keyboard. Spaced repetition will
-            surface weak notes more often.
+            Piano sight reading trainer. Click the piano, play MIDI, or use your microphone. Spaced repetition helps you master weak notes.
           </p>
         </header>
 

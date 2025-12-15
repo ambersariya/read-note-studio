@@ -1,18 +1,23 @@
-# 🎹 Piano Note Flashcards
+# 🎹 ReadNote
 
-A small but focused **piano note training web app** built with **React, TypeScript, Tailwind CSS, Vite, VexFlow, and Tone.js**.
+A focused **piano sight reading trainer** built with **React, TypeScript, Tailwind CSS, Vite, VexFlow, and Tone.js**.
 
-The goal is simple: **get faster at recognising notes on the stave** — visually and aurally — without unnecessary clutter.
+The goal is simple: **get faster at reading notes on the staff** — visually and aurally — with a clean, distraction-free interface.
 
 ---
 
 ## ✨ Features
 
-- 🎼 **Treble clef note flashcards** rendered with VexFlow
-- 🔊 **Audio playback** of notes using Tone.js
-- 🧠 Instant feedback with **score + streak tracking**
-- 🎯 Configurable **note ranges** (C4–B4, C4–C5, C4–C6)
-- ⚡ Fast dev experience via **Vite**
+- 🎼 **Musical staff notation** rendered with VexFlow
+- 🎹 **Interactive piano keyboard** with touch support
+- 🔊 **Realistic piano audio** using Salamander Grand Piano samples
+- 🎤 **Microphone pitch detection** - play your real piano and the app listens
+- 🎵 **MIDI keyboard support** for external piano input
+- 🧠 **Spaced repetition algorithm** focuses on your weak notes
+- 📊 **Score and streak tracking** with persistent stats
+- 🎯 **Multiple difficulty levels** - beginner to advanced
+- ⚙️ **Flexible settings** - ranges, clefs, key signatures
+- 📱 **PWA support** - install as a mobile app
 - 🎨 Clean, modern UI using **Tailwind CSS**
 
 ---
