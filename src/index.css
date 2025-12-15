@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
-/* Black key responsive positioning using CSS variable */
+/* Black key responsive positioning */
+/* Black keys should be centered between white keys */
+/* Mobile: white=44px (2.75rem), black=28px (1.75rem), offset=(44-28)/2=8px */
+/* Desktop: white=64px (4rem), black=40px (2.5rem), offset=(64-40)/2=12px */
 @media (min-width: 640px) {
   .black-key-desktop {
     left: calc((var(--key-index) + 1) * 4rem - 1.25rem);
