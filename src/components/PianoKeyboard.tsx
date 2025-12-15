@@ -9,6 +9,7 @@ interface PianoKeyboardProps {
   includeAccidentals: boolean;
   midiChoices: number[];
   keySigPref: AccidentalPref;
+  showHints: boolean;
   onKeyPress: (midi: number) => void;
 }
 
@@ -19,6 +20,7 @@ export function PianoKeyboard({
   includeAccidentals,
   midiChoices,
   keySigPref,
+  showHints,
   onKeyPress,
 }: PianoKeyboardProps) {
   const pianoMidi = useMemo(() => {
@@ -79,7 +81,7 @@ export function PianoKeyboard({
                   <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
                     {whiteKeyLabel(m, keySigPref)}
                   </div>
-                  {active ? <div className="absolute inset-x-1 top-1 h-2 rounded bg-emerald-500/60" /> : null}
+                  {active && showHints ? <div className="absolute inset-x-1 top-1 h-2 rounded bg-emerald-500/60" /> : null}
                 </button>
               );
             })}
@@ -103,7 +105,7 @@ export function PianoKeyboard({
                   "hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed"
                 }
               >
-                {active ? <div className="mx-auto mt-2 h-2 w-6 rounded bg-emerald-400/70" /> : null}
+                {active && showHints ? <div className="mx-auto mt-2 h-2 w-6 rounded bg-emerald-400/70" /> : null}
               </button>
             );
           })}

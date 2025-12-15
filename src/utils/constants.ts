@@ -22,6 +22,8 @@ export const KEY_SIGS: KeySig[] = [
 // --- Range presets ---
 // MIDI numbers: C4=60, E2=40
 export const RANGES: RangePreset[] = [
+  { id: "beginner_5", label: "🌱 Beginner: C4–G4 (5 notes)", clef: "treble", minMidi: 60, maxMidi: 67 },
+  { id: "beginner_7", label: "🌱 Beginner+: C4–B4 (7 notes)", clef: "treble", minMidi: 60, maxMidi: 71 },
   { id: "treble_easy", label: "Treble: C4–B4 (easy)", clef: "treble", minMidi: 60, maxMidi: 71 },
   { id: "treble_mid", label: "Treble: C4–C6", clef: "treble", minMidi: 60, maxMidi: 84 },
   { id: "bass_low", label: "Bass: E2–C4", clef: "bass", minMidi: 40, maxMidi: 60 },

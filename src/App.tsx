@@ -17,7 +17,9 @@ import { ScoreBoard } from "./components/ScoreBoard";
 import { PianoKeyboard } from "./components/PianoKeyboard";
 import { SettingsPanel } from "./components/SettingsPanel";
 
-const APP_VERSION = "1.0.0";
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
+const APP_VERSION = "1.2.0";
 const SETTINGS_STORAGE_KEY = "piano_flashcards_settings_v1";
 
 function loadSettings() {
@@ -33,6 +35,8 @@ function loadSettings() {
 export default function App() {
   const savedSettings = loadSettings();
   
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>(savedSettings?.difficulty ?? "beginner");
+  const [showHints, setShowHints] = useState<boolean>(savedSettings?.showHints ?? false);
   const [rangeId, setRangeId] = useState<string>(savedSettings?.rangeId ?? RANGES[0].id);
   const range = useMemo(() => RANGES.find((r) => r.id === rangeId) ?? RANGES[0], [rangeId]);
 
@@ -40,7 +44,11 @@ export default function App() {
   const [keySigId, setKeySigId] = useState<string>(savedSettings?.keySigId ?? KEY_SIGS[0].id);
   const keySig = useMemo(() => KEY_SIGS.find((k) => k.id === keySigId) ?? KEY_SIGS[0], [keySigId]);
 
-  const [includeAccidentals, setIncludeAccidentals] = useState<boolean>(savedSettings?.includeAccidentals ?? true);
+  // Derive includeAccidentals from difficulty level
+  const includeAccidentals = useMemo(() => {
+    if (difficulty === "beginner") return false;
+    return true;
+  }, [difficulty]);
   const [stats, setStats] = useState<StatsMap>(() => loadStats());
   const [current, setCurrent] = useState<Note>(() => {
     const midi = 60;
@@ -75,12 +83,12 @@ export default function App() {
     try {
       window.localStorage.setItem(
         SETTINGS_STORAGE_KEY,
-        JSON.stringify({ rangeId, clef, keySigId, includeAccidentals })
+        JSON.stringify({ rangeId, clef, keySigId, difficulty, showHints })
       );
     } catch {
       // ignore
     }
-  }, [rangeId, clef, keySigId, includeAccidentals]);
+  }, [rangeId, clef, keySigId, difficulty, showHints]);
 
   function pickNextNote(): Note {
     const weights = midiChoices.map((m) => weightForMidi(stats, m));
@@ -94,7 +102,7 @@ export default function App() {
     setCurrent(next);
     setFeedback({ type: "neutral", text: "What note is this?" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeId, includeAccidentals, keySigId]);
+  }, [rangeId, difficulty, keySigId]);
 
   const next = (): void => {
     setCurrent(pickNextNote());
@@ -246,6 +254,7 @@ export default function App() {
               includeAccidentals={includeAccidentals}
               midiChoices={midiChoices}
               keySigPref={keySig.pref}
+              showHints={showHints}
               onKeyPress={(midi) => void submitMidi(midi)}
             />
           </div>
@@ -254,14 +263,16 @@ export default function App() {
             rangeId={rangeId}
             clef={clef}
             keySigId={keySigId}
-            includeAccidentals={includeAccidentals}
+            difficulty={difficulty}
+            showHints={showHints}
             currentNote={current}
             range={range}
             keySig={keySig}
             onRangeChange={setRangeId}
             onClefChange={setClef}
             onKeySigChange={setKeySigId}
-            onIncludeAccidentalsChange={setIncludeAccidentals}
+            onDifficultyChange={setDifficulty}
+            onShowHintsChange={setShowHints}
             onResetStats={handleResetStats}
           />
         </div>

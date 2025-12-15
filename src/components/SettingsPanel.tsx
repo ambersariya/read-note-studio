@@ -2,18 +2,22 @@ import type { Clef, KeySig, RangePreset, Note } from "../types";
 import { KEY_SIGS, RANGES } from "../utils/constants";
 import { noteLabel } from "../utils/noteUtils";
 
+type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
 interface SettingsPanelProps {
   rangeId: string;
   clef: Clef;
   keySigId: string;
-  includeAccidentals: boolean;
+  difficulty: DifficultyLevel;
+  showHints: boolean;
   currentNote: Note;
   range: RangePreset;
   keySig: KeySig;
   onRangeChange: (rangeId: string) => void;
   onClefChange: (clef: Clef) => void;
   onKeySigChange: (keySigId: string) => void;
-  onIncludeAccidentalsChange: (include: boolean) => void;
+  onDifficultyChange: (difficulty: DifficultyLevel) => void;
+  onShowHintsChange: (show: boolean) => void;
   onResetStats: () => void;
 }
 
@@ -21,14 +25,16 @@ export function SettingsPanel({
   rangeId,
   clef,
   keySigId,
-  includeAccidentals,
+  difficulty,
+  showHints,
   currentNote,
   range,
   keySig,
   onRangeChange,
   onClefChange,
   onKeySigChange,
-  onIncludeAccidentalsChange,
+  onDifficultyChange,
+  onShowHintsChange,
   onResetStats,
 }: SettingsPanelProps) {
   return (
@@ -36,6 +42,37 @@ export function SettingsPanel({
       <h2 className="text-base font-semibold">Settings</h2>
 
       <div className="mt-4 space-y-4">
+        <label className="block">
+          <div className="mb-1 text-sm font-semibold text-slate-200">Difficulty Level</div>
+          <select
+            value={difficulty}
+            onChange={(e) => onDifficultyChange(e.target.value as DifficultyLevel)}
+            className="w-full rounded-xl bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-white/10 focus:outline-none"
+          >
+            <option value="beginner">🌱 Beginner (natural notes only)</option>
+            <option value="intermediate">📚 Intermediate (with accidentals)</option>
+            <option value="advanced">🎓 Advanced (full range)</option>
+          </select>
+          <div className="mt-2 text-xs text-slate-400">
+            {difficulty === "beginner" && "Perfect for starting out! No sharps or flats."}
+            {difficulty === "intermediate" && "Includes sharps and flats for extra challenge."}
+            {difficulty === "advanced" && "Full chromatic range with all accidentals."}
+          </div>
+        </label>
+
+        <label className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
+          <div>
+            <div className="text-sm font-semibold text-slate-200">Show note hints</div>
+            <div className="text-xs text-slate-400">Highlight the current note on the piano keyboard</div>
+          </div>
+          <input
+            type="checkbox"
+            checked={showHints}
+            onChange={(e) => onShowHintsChange(e.target.checked)}
+            className="h-5 w-5"
+          />
+        </label>
+
         <label className="block">
           <div className="mb-1 text-sm font-semibold text-slate-200">Range preset</div>
           <select
@@ -94,19 +131,6 @@ export function SettingsPanel({
           <div className="mt-2 text-xs text-slate-400">
             Notes are spelled with {keySig.pref === "flats" ? "flats" : "sharps"} by default for this key.
           </div>
-        </label>
-
-        <label className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
-          <div>
-            <div className="text-sm font-semibold text-slate-200">Include accidentals</div>
-            <div className="text-xs text-slate-400">Enable C#, Eb, etc. (chromatic notes)</div>
-          </div>
-          <input
-            type="checkbox"
-            checked={includeAccidentals}
-            onChange={(e) => onIncludeAccidentalsChange(e.target.checked)}
-            className="h-5 w-5"
-          />
         </label>
 
         <div className="rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
