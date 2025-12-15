@@ -57,7 +57,8 @@ function autoCorrelate(buffer: Float32Array, sampleRate: number): number | null 
   // Find the RMS (root mean square) to check if there's enough signal
   let rms = 0;
   for (let i = 0; i < buffer.length; i++) {
-    rms += buffer[i] * buffer[i];
+    const val = buffer[i];
+    rms += val * val;
   }
   rms = Math.sqrt(rms / buffer.length);
   

@@ -1,6 +1,6 @@
 import type { AccidentalPref, Note } from "../types";
 import { useMemo } from "react";
-import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi, getBlackKeyIndex } from "../utils/noteUtils";
+import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi } from "../utils/noteUtils";
 
 interface PianoKeyboardProps {
   minMidi: number;
