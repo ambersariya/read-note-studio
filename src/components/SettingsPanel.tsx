@@ -38,11 +38,11 @@ export function SettingsPanel({
   onResetStats,
 }: SettingsPanelProps) {
   return (
-    <aside className="rounded-2xl bg-slate-900/60 p-4 ring-1 ring-white/10 sm:p-5">
+    <aside className="lg:sticky lg:top-5 flex flex-col rounded-2xl bg-slate-900/60 p-4 ring-1 ring-white/10 sm:p-5 lg:max-h-[calc(100vh-2.5rem)] lg:overflow-hidden">
       <h2 className="text-base font-semibold">Settings</h2>
 
-      <div className="mt-4 space-y-4">
-        <div className="block">
+      <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1 no-scrollbar lg:pr-2">
+        <div className="block rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
           <div className="mb-2 text-sm font-semibold text-slate-200">Difficulty Level</div>
           <div className="flex gap-2">
             <button
@@ -93,20 +93,23 @@ export function SettingsPanel({
           />
         </label>
 
-        <label className="block">
+        <div className="block">
           <div className="mb-1 text-sm font-semibold text-slate-200">Range preset</div>
-          <select
-            value={rangeId}
-            onChange={(e) => onRangeChange(e.target.value)}
-            className="w-full rounded-xl bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-white/10 focus:outline-none"
-          >
+          <div className="grid grid-cols-2 gap-2">
             {RANGES.map((r) => (
-              <option key={r.id} value={r.id}>
+              <button
+                key={r.id}
+                onClick={() => onRangeChange(r.id)}
+                className={
+                  "rounded-xl px-3 py-2 text-left text-sm font-semibold ring-1 ring-white/10 " +
+                  (rangeId === r.id ? "bg-white/15 text-white" : "bg-white/5 text-slate-200 hover:bg-white/10")
+                }
+              >
                 {r.label}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         <label className="block">
           <div className="mb-1 text-sm font-semibold text-slate-200">Clef</div>
@@ -135,23 +138,30 @@ export function SettingsPanel({
           </div>
         </label>
 
-        <label className="block">
-          <div className="mb-1 text-sm font-semibold text-slate-200">Key signature</div>
-          <select
-            value={keySigId}
-            onChange={(e) => onKeySigChange(e.target.value)}
-            className="w-full rounded-xl bg-slate-800 px-3 py-2 text-sm text-slate-100 ring-1 ring-white/10 focus:outline-none"
-          >
+        <details className="group rounded-xl bg-slate-800/60 px-3 py-3 ring-1 ring-white/10">
+          <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-200">
+            Key signature
+            <span className="text-xs text-slate-400 group-open:hidden">Tap to choose</span>
+            <span className="text-xs text-slate-400 hidden group-open:inline">Tap to close</span>
+          </summary>
+          <div className="mt-3 grid grid-cols-2 gap-2">
             {KEY_SIGS.map((k) => (
-              <option key={k.id} value={k.id}>
+              <button
+                key={k.id}
+                onClick={() => onKeySigChange(k.id)}
+                className={
+                  "rounded-xl px-3 py-2 text-left text-sm font-semibold ring-1 ring-white/10 " +
+                  (keySigId === k.id ? "bg-white/15 text-white" : "bg-white/5 text-slate-200 hover:bg-white/10")
+                }
+              >
                 {k.label}
-              </option>
+              </button>
             ))}
-          </select>
-          <div className="mt-2 text-xs text-slate-400">
+          </div>
+          <div className="mt-3 text-xs text-slate-400">
             Notes are spelled with {keySig.pref === "flats" ? "flats" : "sharps"} by default for this key.
           </div>
-        </label>
+        </details>
 
         <div className="rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
           <div className="text-sm font-semibold text-slate-200">Spaced repetition</div>
@@ -167,43 +177,33 @@ export function SettingsPanel({
           </button>
         </div>
 
-        <div className="rounded-xl bg-blue-500/10 px-3 py-3 ring-1 ring-blue-400/20">
-          <div className="text-sm font-semibold text-blue-100">💡 Memory Aids</div>
-          <div className="mt-2 space-y-2 text-xs">
-            <div>
-              <div className="font-semibold text-blue-200">Treble Clef Lines (EGBDF):</div>
-              <div className="text-blue-300/80">
-                <span className="font-semibold">E</span>very <span className="font-semibold">G</span>ood{" "}
-                <span className="font-semibold">B</span>oy <span className="font-semibold">D</span>eserves{" "}
-                <span className="font-semibold">F</span>udge
-              </div>
+        <details className="rounded-xl bg-blue-500/10 px-3 py-3 ring-1 ring-blue-400/20" defaultOpen={false}>
+          <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-blue-100">
+            💡 Memory Aids
+            <span className="text-xs text-blue-200/80">Tap to view</span>
+          </summary>
+          <div className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
+            <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
+              <div className="font-semibold text-blue-200">Treble lines (EGBDF)</div>
+              <div className="text-blue-300/80">Every Good Boy Deserves Fudge</div>
             </div>
-            <div>
-              <div className="font-semibold text-blue-200">Treble Clef Spaces (FACE):</div>
-              <div className="text-blue-300/80">
-                <span className="font-semibold">F-A-C-E</span> spells FACE!
-              </div>
+            <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
+              <div className="font-semibold text-blue-200">Treble spaces (FACE)</div>
+              <div className="text-blue-300/80">FACE spells FACE</div>
             </div>
-            <div>
-              <div className="font-semibold text-blue-200">Bass Clef Lines (GBDFA):</div>
-              <div className="text-blue-300/80">
-                <span className="font-semibold">G</span>ood <span className="font-semibold">B</span>oys{" "}
-                <span className="font-semibold">D</span>o <span className="font-semibold">F</span>ine{" "}
-                <span className="font-semibold">A</span>lways
-              </div>
+            <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
+              <div className="font-semibold text-blue-200">Bass lines (GBDFA)</div>
+              <div className="text-blue-300/80">Good Boys Do Fine Always</div>
             </div>
-            <div>
-              <div className="font-semibold text-blue-200">Bass Clef Spaces (ACEG):</div>
-              <div className="text-blue-300/80">
-                <span className="font-semibold">A</span>ll <span className="font-semibold">C</span>ows{" "}
-                <span className="font-semibold">E</span>at <span className="font-semibold">G</span>rass
-              </div>
+            <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
+              <div className="font-semibold text-blue-200">Bass spaces (ACEG)</div>
+              <div className="text-blue-300/80">All Cows Eat Grass</div>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
-      <div className="mt-6 rounded-xl bg-slate-800/50 p-3 text-xs text-slate-300 ring-1 ring-white/10">
+      <div className="mt-4 rounded-xl bg-slate-800/50 p-3 text-xs text-slate-300 ring-1 ring-white/10">
         <div className="font-semibold text-slate-200">Current card</div>
         <div className="mt-1">{noteLabel(currentNote)}</div>
         <div className="mt-2 text-slate-400">
