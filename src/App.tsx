@@ -265,7 +265,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto w-full max-w-none px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             ReadNote

@@ -1,11 +1,24 @@
 @import "tailwindcss";
 
-/* Black key responsive positioning */
-/* Black keys should be centered between white keys */
-/* Mobile: white=44px (2.75rem), black=28px (1.75rem), offset=(44-28)/2=8px */
-/* Desktop: white=64px (4rem), black=40px (2.5rem), offset=(64-40)/2=12px */
+.piano-keyboard {
+  --white-key-width: 2.5rem;
+  --black-key-width: 1.65rem;
+  --black-offset: calc((var(--white-key-width) - var(--black-key-width)) / 2);
+}
+
 @media (min-width: 640px) {
-  .black-key-desktop {
-    left: calc((var(--key-index) + 1) * 4rem - 1.25rem);
+  .piano-keyboard {
+    --white-key-width: 3rem;
+    --black-key-width: 2rem;
   }
+}
+
+.piano-keyboard .white-key {
+  width: var(--white-key-width);
+  min-width: var(--white-key-width);
+}
+
+.piano-keyboard .black-key {
+  width: var(--black-key-width);
+  left: calc((var(--key-index) + 1) * var(--white-key-width) - var(--black-offset));
 }

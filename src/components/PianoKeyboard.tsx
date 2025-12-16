@@ -1,5 +1,5 @@
 import type { AccidentalPref, Note } from "../types";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi } from "../utils/noteUtils";
 
 interface PianoKeyboardProps {
@@ -71,7 +71,7 @@ export function PianoKeyboard({
       </div>
 
       <div className="relative overflow-x-auto rounded-xl bg-slate-800/40 p-3 ring-1 ring-white/10">
-        <div className="relative inline-flex">
+        <div className="piano-keyboard relative inline-flex">
           {/* White keys */}
           <div className="inline-flex">
             {whiteKeys.map((m) => {
@@ -84,9 +84,9 @@ export function PianoKeyboard({
                   disabled={!enabled}
                   title={`${whiteKeyLabel(m, keySigPref)}${midiToOctave(m)}`}
                   className={
-                    "relative h-32 w-11 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
+                    "white-key relative h-32 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
                     "hover:bg-white active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed " +
-                    "sm:h-44 sm:w-16"
+                    "sm:h-44"
                   }
                 >
                   <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
@@ -109,20 +109,12 @@ export function PianoKeyboard({
                 onClick={() => onKeyPress(midi)}
                 disabled={!enabled}
                 title={`${noteLabel({ midi, spelling: spellMidi(midi, keySigPref) })}`}
-                style={{
-                  // Mobile: (index + 1) * 44px - 14px
-                  // Desktop: (index + 1) * 64px - 20px  
-                  left: `calc((${cssIndex + 1}) * 2.75rem - 0.875rem)`,
-                }}
                 className={
-                  `absolute top-3 h-24 w-7 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
+                  `black-key absolute top-3 h-24 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
-                  `sm:h-32 sm:w-10 sm:black-key-desktop`
+                  `sm:h-32`
                 }
-                {...({ style: { 
-                  left: `calc((${cssIndex + 1}) * 2.75rem - 0.875rem)`,
-                  '--key-index': cssIndex 
-                } } as any)}
+                style={{ "--key-index": cssIndex } as CSSProperties}
               >
                 {active && showHints ? <div className="mx-auto mt-2 h-2 w-5 rounded bg-emerald-400/70 sm:w-7" /> : null}
               </button>
