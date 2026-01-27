@@ -52,6 +52,39 @@ export function noteLabel(note: Note): string {
   return `${note.spelling.letter}${note.spelling.accidental}${midiToOctave(note.midi)}`;
 }
 
+export type NoteNaming = "english" | "solfege" | "german";
+
+function baseNameForNaming(letter: PitchSpelling["letter"], accidental: PitchSpelling["accidental"], naming: NoteNaming): string {
+  if (naming === "solfege") {
+    const map: Record<PitchSpelling["letter"], string> = {
+      C: "Do",
+      D: "Re",
+      E: "Mi",
+      F: "Fa",
+      G: "Sol",
+      A: "La",
+      B: "Ti",
+    };
+    return map[letter];
+  }
+
+  if (naming === "german") {
+    if (letter === "B" && accidental === "") return "H";
+    if (letter === "B" && accidental === "b") return "B";
+  }
+
+  return letter;
+}
+
+export function noteLabelWithNaming(note: Note, naming: NoteNaming): string {
+  const base = baseNameForNaming(note.spelling.letter, note.spelling.accidental, naming);
+  const acc = naming === "german" && note.spelling.letter === "B" && note.spelling.accidental === ""
+    ? ""
+    : note.spelling.accidental;
+  const oct = midiToOctave(note.midi);
+  return `${base}${acc}${oct}`;
+}
+
 export function vexKeyForNote(note: Note): string {
   // VexFlow key format: "c#/4" etc.
   const l = note.spelling.letter.toLowerCase();
@@ -148,7 +181,7 @@ export function getBlackKeyIndex(midi: number): number {
   return -1; // Not a black key
 }
 
-export function whiteKeyLabel(midi: number, pref: AccidentalPref): string {
+export function whiteKeyLabel(midi: number, pref: AccidentalPref, naming: NoteNaming = "english"): string {
   const spelling = spellMidi(midi, pref);
-  return `${spelling.letter}`;
+  return baseNameForNaming(spelling.letter, spelling.accidental, naming);
 }

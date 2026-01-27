@@ -18,6 +18,12 @@ interface SettingsPanelProps {
   onKeySigChange: (keySigId: string) => void;
   onDifficultyChange: (difficulty: DifficultyLevel) => void;
   onShowHintsChange: (show: boolean) => void;
+  noteNaming: "english" | "solfege" | "german";
+  onNoteNamingChange: (n: "english" | "solfege" | "german") => void;
+  autoAdvance: boolean;
+  onAutoAdvanceChange: (v: boolean) => void;
+  visualHint: boolean;
+  onVisualHintChange: (v: boolean) => void;
 }
 
 export function SettingsPanel({
@@ -34,6 +40,12 @@ export function SettingsPanel({
   onKeySigChange,
   onDifficultyChange,
   onShowHintsChange,
+  noteNaming,
+  onNoteNamingChange,
+  autoAdvance,
+  onAutoAdvanceChange,
+  visualHint,
+  onVisualHintChange,
 }: SettingsPanelProps) {
   return (
     <aside className="lg:sticky lg:top-5 flex flex-col rounded-2xl bg-slate-900/60 p-4 ring-1 ring-white/10 sm:p-5 lg:max-h-[calc(100vh-2.5rem)] lg:overflow-hidden">
@@ -87,6 +99,57 @@ export function SettingsPanel({
             type="checkbox"
             checked={showHints}
             onChange={(e) => onShowHintsChange(e.target.checked)}
+            className="h-5 w-5"
+          />
+        </label>
+
+        <details className="rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
+          <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-200">
+            Note naming
+            <span className="text-xs text-slate-400">Tap to choose</span>
+          </summary>
+          <div className="mt-3 grid grid-cols-1 gap-2 text-sm">
+            {[
+              { id: "english", label: "English (C, D, E)" },
+              { id: "solfege", label: "Solfège (Do, Re, Mi)" },
+              { id: "german", label: "German (H for B)" },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => onNoteNamingChange(opt.id as SettingsPanelProps["noteNaming"])}
+                className={
+                  "rounded-xl px-3 py-2 text-left font-semibold ring-1 ring-white/10 " +
+                  (noteNaming === opt.id ? "bg-white/15 text-white" : "bg-white/5 text-slate-200 hover:bg-white/10")
+                }
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </details>
+
+        <label className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
+          <div>
+            <div className="text-sm font-semibold text-slate-200">Auto-advance</div>
+            <div className="text-xs text-slate-400">Move to the next note 200ms after a correct answer</div>
+          </div>
+          <input
+            type="checkbox"
+            checked={autoAdvance}
+            onChange={(e) => onAutoAdvanceChange(e.target.checked)}
+            className="h-5 w-5"
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 ring-1 ring-white/10">
+          <div>
+            <div className="text-sm font-semibold text-slate-200">Visual hint</div>
+            <div className="text-xs text-slate-400">Highlight the correct key if idle for 5 seconds</div>
+          </div>
+          <input
+            type="checkbox"
+            checked={visualHint}
+            onChange={(e) => onVisualHintChange(e.target.checked)}
             className="h-5 w-5"
           />
         </label>

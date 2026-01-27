@@ -4,12 +4,13 @@ import { KEY_SIGS, RANGES } from "./utils/constants";
 import {
   buildMidiRange,
   loadStats,
-  noteLabel,
+  noteLabelWithNaming,
   saveStats,
   spellMidi,
   updateStats,
   weightedPick,
   weightForMidi,
+  type NoteNaming,
 } from "./utils/noteUtils";
 import { ensureAudioStarted, playMidi } from "./utils/audio";
 import { StaveDisplay } from "./components/StaveDisplay";
@@ -43,6 +44,9 @@ export default function App() {
   const [clef, setClef] = useState<Clef>(savedSettings?.clef ?? range.clef);
   const [keySigId, setKeySigId] = useState<string>(savedSettings?.keySigId ?? KEY_SIGS[0].id);
   const keySig = useMemo(() => KEY_SIGS.find((k) => k.id === keySigId) ?? KEY_SIGS[0], [keySigId]);
+  const [noteNaming, setNoteNaming] = useState<NoteNaming>(savedSettings?.noteNaming ?? "english");
+  const [autoAdvance, setAutoAdvance] = useState<boolean>(savedSettings?.autoAdvance ?? true);
+  const [visualHint, setVisualHint] = useState<boolean>(savedSettings?.visualHint ?? true);
 
   // Derive includeAccidentals from difficulty level
   const includeAccidentals = useMemo(() => {
@@ -70,11 +74,13 @@ export default function App() {
   });
   const [flashState, setFlashState] = useState<"neutral" | "good" | "bad">("neutral");
   const [flashMidi, setFlashMidi] = useState<number | null>(null);
+  const [hintForced, setHintForced] = useState<boolean>(false);
   const sessionStartRef = useRef<number | null>(null);
   const flashTimerRef = useRef<number | null>(null);
   const npmIntervalRef = useRef<number | null>(null);
   const correctCountRef = useRef<number>(0);
   const attemptsRef = useRef<number>(0);
+  const visualHintTimerRef = useRef<number | null>(null);
 
   const midiChoices = useMemo(
     () => buildMidiRange(range.minMidi, range.maxMidi, includeAccidentals),
@@ -96,21 +102,43 @@ export default function App() {
     try {
       window.localStorage.setItem(
         SETTINGS_STORAGE_KEY,
-        JSON.stringify({ rangeId, clef, keySigId, difficulty, showHints })
+        JSON.stringify({ rangeId, clef, keySigId, difficulty, showHints, noteNaming, autoAdvance, visualHint })
       );
     } catch {
       // ignore
     }
-  }, [rangeId, clef, keySigId, difficulty, showHints]);
+  }, [rangeId, clef, keySigId, difficulty, showHints, noteNaming, autoAdvance, visualHint]);
 
-  // Clear any flash timer on unmount
+  // Clear timers on unmount
   useEffect(() => {
     return () => {
       if (flashTimerRef.current !== null) {
         window.clearTimeout(flashTimerRef.current);
       }
+      if (npmIntervalRef.current !== null) {
+        window.clearInterval(npmIntervalRef.current);
+      }
+      if (visualHintTimerRef.current !== null) {
+        window.clearTimeout(visualHintTimerRef.current);
+      }
     };
   }, []);
+
+  // Visual hint timer per note
+  useEffect(() => {
+    if (visualHintTimerRef.current !== null) {
+      window.clearTimeout(visualHintTimerRef.current);
+    }
+    setHintForced(false);
+    if (visualHint) {
+      visualHintTimerRef.current = window.setTimeout(() => setHintForced(true), 5000);
+    }
+    return () => {
+      if (visualHintTimerRef.current !== null) {
+        window.clearTimeout(visualHintTimerRef.current);
+      }
+    };
+  }, [current, visualHint]);
 
   function pickNextNote(avoidMidi?: number): Note {
     const weights = midiChoices.map((m) => weightForMidi(stats, m));
@@ -144,6 +172,7 @@ export default function App() {
     const midiToAvoid = avoidMidi ?? current.midi;
     setCurrent(pickNextNote(midiToAvoid));
     setFeedback({ type: "neutral", text: "What note is this?" });
+    setHintForced(false);
   };
 
   const submitMidi = async (answerMidi: number): Promise<void> => {
@@ -163,7 +192,7 @@ export default function App() {
     if (correct) {
       setScore((v) => v + 1);
       setStreak((v) => v + 1);
-      setFeedback({ type: "good", text: `✅ Correct: ${noteLabel(current)}` });
+      setFeedback({ type: "good", text: `✅ Correct: ${noteLabelWithNaming(current, noteNaming)}` });
       setFlashState("good");
       setFlashMidi(null);
 
@@ -201,7 +230,7 @@ export default function App() {
       const your = { midi: answerMidi, spelling: spellMidi(answerMidi, keySig.pref) };
       setFeedback({ 
         type: "bad", 
-        text: `❌ Nope — it was ${noteLabel(current)} (you played ${noteLabel(your)})` 
+        text: `❌ Nope — it was ${noteLabelWithNaming(current, noteNaming)} (you played ${noteLabelWithNaming(your, noteNaming)})` 
       });
       setFlashState("bad");
       setFlashMidi(answerMidi);
@@ -215,7 +244,8 @@ export default function App() {
       setFlashMidi(null);
     }, 320);
 
-    window.setTimeout(() => next(current.midi), 700);
+    const delay = correct && autoAdvance ? 200 : 700;
+    window.setTimeout(() => next(current.midi), delay);
   };
 
   const handleResetStats = (): void => {
@@ -304,6 +334,8 @@ export default function App() {
                 midiChoices={midiChoices}
                 keySigPref={keySig.pref}
                 showHints={showHints}
+                noteNaming={noteNaming}
+                hintForced={hintForced}
                 flashMidi={flashMidi}
                 flashState={flashState}
                 onKeyPress={(midi) => void submitMidi(midi)}
@@ -381,6 +413,9 @@ export default function App() {
               keySigId={keySigId}
               difficulty={difficulty}
               showHints={showHints}
+              noteNaming={noteNaming}
+              autoAdvance={autoAdvance}
+              visualHint={visualHint}
               currentNote={current}
               range={range}
               keySig={keySig}
@@ -389,6 +424,9 @@ export default function App() {
               onKeySigChange={setKeySigId}
               onDifficultyChange={setDifficulty}
               onShowHintsChange={setShowHints}
+              onNoteNamingChange={setNoteNaming}
+              onAutoAdvanceChange={setAutoAdvance}
+              onVisualHintChange={setVisualHint}
             />
           </div>
         </div>

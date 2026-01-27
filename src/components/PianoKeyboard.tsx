@@ -1,6 +1,6 @@
 import type { AccidentalPref, Note } from "../types";
 import { useMemo, type CSSProperties } from "react";
-import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabel, spellMidi } from "../utils/noteUtils";
+import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabelWithNaming, spellMidi, type NoteNaming } from "../utils/noteUtils";
 
 interface PianoKeyboardProps {
   minMidi: number;
@@ -13,6 +13,8 @@ interface PianoKeyboardProps {
   onKeyPress: (midi: number) => void;
   flashMidi?: number | null;
   flashState?: "neutral" | "good" | "bad";
+  noteNaming: NoteNaming;
+  hintForced?: boolean;
 }
 
 export function PianoKeyboard({
@@ -23,9 +25,11 @@ export function PianoKeyboard({
   midiChoices,
   keySigPref,
   showHints,
+  noteNaming,
   onKeyPress,
   flashMidi = null,
   flashState = "neutral",
+  hintForced = false,
 }: PianoKeyboardProps) {
   const pianoMidi = useMemo(() => {
     // Expand a little to start/end on white keys for nicer layout
@@ -82,12 +86,13 @@ export function PianoKeyboard({
               const active = m === currentNote.midi;
               const enabled = isInAnswerSet(m);
               const flashBad = flashState === "bad" && flashMidi === m;
+              const showHighlight = active && (showHints || hintForced);
               return (
                 <button
                   key={m}
                   onClick={() => onKeyPress(m)}
                   disabled={!enabled}
-                  title={`${whiteKeyLabel(m, keySigPref)}${midiToOctave(m)}`}
+                  title={`${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}`}
                   className={
                     "white-key relative h-32 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
                     "hover:bg-white active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed " +
@@ -96,9 +101,9 @@ export function PianoKeyboard({
                   }
                 >
                   <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
-                    {whiteKeyLabel(m, keySigPref)}
+                    {whiteKeyLabel(m, keySigPref, noteNaming)}
                   </div>
-                  {active && showHints ? <div className="absolute inset-x-1 top-1 h-3 rounded bg-emerald-500/60" /> : null}
+                  {showHighlight ? <div className="absolute inset-x-1 top-1 h-3 rounded bg-emerald-500/60" /> : null}
                 </button>
               );
             })}
@@ -109,13 +114,14 @@ export function PianoKeyboard({
             const active = midi === currentNote.midi;
             const enabled = includeAccidentals && isInAnswerSet(midi);
             const flashBad = flashState === "bad" && flashMidi === midi;
+            const showHighlight = active && (showHints || hintForced);
             
             return (
               <button
                 key={midi}
                 onClick={() => onKeyPress(midi)}
                 disabled={!enabled}
-                title={`${noteLabel({ midi, spelling: spellMidi(midi, keySigPref) })}`}
+                title={`${noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming)}`}
                 className={
                   `black-key absolute top-3 h-24 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
@@ -124,7 +130,7 @@ export function PianoKeyboard({
                 }
                 style={{ "--key-index": cssIndex } as CSSProperties}
               >
-                {active && showHints ? <div className="mx-auto mt-2 h-2 w-5 rounded bg-emerald-400/70 sm:w-7" /> : null}
+                {showHighlight ? <div className="mx-auto mt-2 h-2 w-5 rounded bg-emerald-400/70 sm:w-7" /> : null}
               </button>
             );
           })}
