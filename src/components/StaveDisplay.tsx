@@ -10,9 +10,10 @@ interface StaveDisplayProps {
   clef: Clef;
   keySig: KeySig;
   flashState?: "neutral" | "good" | "bad";
+  playedMidi?: number | null;
 }
 
-export function StaveDisplay({ note, clef, keySig, flashState = "neutral" }: StaveDisplayProps) {
+export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playedMidi = null }: StaveDisplayProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -55,10 +56,34 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral" }: Sta
       staveNote.addModifier(new Accidental(note.spelling.accidental));
     }
 
+    const tickables = [staveNote];
+
+    // Display ghost note (the wrong note played) in red to show error distance
+    if (playedMidi !== null && playedMidi !== note.midi) {
+      const wrongSpelling = { midi: playedMidi, spelling: { ...note.spelling } };
+      // Calculate the distance from correct note
+      const distance = playedMidi - note.midi;
+      const letter = note.spelling.letter;
+      const octaveShift = Math.floor(distance / 12);
+      const semitoneShift = distance % 12;
+
+      // Simple ghost note - just show at the played MIDI position
+      const wrongKey = vexKeyForNote(wrongSpelling);
+      const wrongNote = new StaveNote({
+        clef,
+        keys: [wrongKey],
+        duration: "q",
+      }).setStyle({
+        strokeStyle: "rgba(248,113,113,0.7)",
+        fillStyle: "rgba(248,113,113,0.35)",
+      });
+      tickables.push(wrongNote);
+    }
+
     const voice = new Voice({ numBeats: 1, beatValue: 4 });
     // Exercises are measure-free: allow incomplete measures.
     voice.setMode(Flow.Voice.Mode.SOFT);
-    voice.addTickables([staveNote]);
+    voice.addTickables(tickables);
 
     new Formatter().joinVoices([voice]).format([voice], 240);
     voice.draw(context, stave);
@@ -66,9 +91,9 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral" }: Sta
 
   const flashClass =
     flashState === "bad"
-      ? "stave-flash-bad ring-2 ring-rose-400/70 shadow-[0_0_0_6px_rgba(248,113,113,0.25)]"
+      ? "animate-shake ring-2 ring-rose-400/70 shadow-[0_0_0_6px_rgba(248,113,113,0.25)]"
       : flashState === "good"
-        ? "ring-2 ring-emerald-300/60"
+        ? "animate-pop-success ring-2 ring-emerald-300/60"
         : "";
 
   return (

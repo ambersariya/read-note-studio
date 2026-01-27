@@ -72,14 +72,16 @@ export function PianoKeyboard({
   const isInAnswerSet = (midi: number): boolean => midiChoices.includes(midi);
 
   return (
-    <div className="mt-6">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="md:mt-4">
+      {/* Header - Hidden on mobile */}
+      <div className="mb-2 hidden md:flex items-center justify-between px-2">
         <h2 className="text-sm font-semibold text-slate-200">On-screen piano</h2>
         <div className="text-xs text-slate-400">Click a key to answer</div>
       </div>
 
-      <div className="relative overflow-x-auto rounded-xl bg-slate-800/40 p-3 ring-1 ring-white/10">
-        <div className="piano-keyboard relative inline-flex">
+      {/* Piano Container */}
+      <div className="relative overflow-hidden md:rounded-xl bg-transparent md:bg-slate-800/40 md:p-2 md:ring-1 md:ring-white/10">
+        <div className="piano-keyboard relative flex overflow-x-auto justify-center md:justify-start pb-safe">
           {/* White keys */}
           <div className="inline-flex">
             {whiteKeys.map((m) => {
@@ -94,9 +96,9 @@ export function PianoKeyboard({
                   disabled={!enabled}
                   title={`${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}`}
                   className={
-                    "white-key relative h-32 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
+                    "white-key relative h-40 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
                     "hover:bg-white active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed " +
-                    "sm:h-44 " +
+                    "sm:h-48 md:h-44 " +
                     (flashBad ? "key-flash-bad ring-2 ring-rose-400/80" : "")
                   }
                 >
@@ -123,9 +125,9 @@ export function PianoKeyboard({
                 disabled={!enabled}
                 title={`${noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming)}`}
                 className={
-                  `black-key absolute top-3 h-24 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
+                  `black-key absolute top-3 h-28 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
-                  `sm:h-32 ` +
+                  `sm:h-32 md:h-30 ` +
                   (flashBad ? "key-flash-bad ring-2 ring-rose-400/80" : "")
                 }
                 style={{ "--key-index": cssIndex } as CSSProperties}

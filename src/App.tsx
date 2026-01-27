@@ -14,14 +14,14 @@ import {
 } from "./utils/noteUtils";
 import { ensureAudioStarted, playMidi } from "./utils/audio";
 import { StaveDisplay } from "./components/StaveDisplay";
-import { ScoreBoard } from "./components/ScoreBoard";
 import { PianoKeyboard } from "./components/PianoKeyboard";
-import { SettingsPanel } from "./components/SettingsPanel";
+import { SettingsDrawer } from "./components/SettingsDrawer";
+import { MemoryAidsModal } from "./components/MemoryAidsModal";
 
 type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 const APP_VERSION = "1.3.0";
-const SETTINGS_STORAGE_KEY = "piano_flashcards_settings_v1";
+const SETTINGS_STORAGE_KEY = "readnote_studio_settings_v1";
 
 function loadSettings() {
   try {
@@ -68,9 +68,9 @@ export default function App() {
     correct: number;
     attempts: number;
   } | null>(null);
-  const [feedback, setFeedback] = useState<Feedback>({ 
-    type: "neutral", 
-    text: "Click a piano key to answer." 
+  const [feedback, setFeedback] = useState<Feedback>({
+    type: "neutral",
+    text: "Play the note shown on the staff."
   });
   const [flashState, setFlashState] = useState<"neutral" | "good" | "bad">("neutral");
   const [flashMidi, setFlashMidi] = useState<number | null>(null);
@@ -164,14 +164,14 @@ export default function App() {
   useEffect(() => {
     const next = pickNextNote(current.midi);
     setCurrent(next);
-    setFeedback({ type: "neutral", text: "What note is this?" });
+    setFeedback({ type: "neutral", text: "Play the note shown on the staff." });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeId, difficulty, keySigId]);
 
   const next = (avoidMidi?: number): void => {
     const midiToAvoid = avoidMidi ?? current.midi;
     setCurrent(pickNextNote(midiToAvoid));
-    setFeedback({ type: "neutral", text: "What note is this?" });
+    setFeedback({ type: "neutral", text: "Play the note shown on the staff." });
     setHintForced(false);
   };
 
@@ -262,173 +262,183 @@ export default function App() {
       window.clearInterval(npmIntervalRef.current);
       npmIntervalRef.current = null;
     }
-    setFeedback({ type: "neutral", text: "Stats cleared. What note is this?" });
+    setFeedback({ type: "neutral", text: "Stats cleared. Ready for a fresh session!" });
     next();
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
-      <div className="mx-auto w-full max-w-none px-4 py-4 sm:px-6 sm:py-6">
-        <div className="rounded-3xl bg-slate-900/70 p-4 shadow-2xl ring-1 ring-white/10 sm:p-6">
-          <header className="mb-4 sm:mb-5">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-              ReadNote: Piano Sight-Reading Trainer
-              <span className="ml-2 text-xs font-normal text-slate-400 sm:ml-3 sm:text-sm">v{APP_VERSION}</span>
-            </h1>
-            <p className="mt-1 text-sm text-slate-300 sm:text-base">
-              Active trainer for rapid note recognition. Play the note on the on-screen piano; instant feedback keeps you moving.
-            </p>
-          </header>
+    <div className="min-h-screen bg-zinc-950 text-slate-100 flex flex-col">
+      {/* Mobile-First HUD */}
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-2.5 border-b border-white/5">
+        {/* Left: Title (hidden on mobile) */}
+        <div className="hidden md:block">
+          <h1 className="text-base font-semibold tracking-tight lg:text-lg">
+            ReadNote Studio
+            <span className="ml-2 text-xs font-normal text-slate-400">v{APP_VERSION}</span>
+          </h1>
+        </div>
 
-          <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-[1fr_360px]">
-            <div className="rounded-2xl bg-slate-950/40 p-4 shadow-lg ring-1 ring-white/10 sm:p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex-1">
-                  <ScoreBoard
-                    score={score}
-                    streak={streak}
-                    feedback={feedback}
-                    notesPerMinute={notesPerMinute}
-                    attempts={attempts}
-                  />
-                </div>
-                <button
-                  onClick={handleResetStats}
-                  className="self-start rounded-xl bg-rose-500/20 px-4 py-2 text-sm font-semibold text-rose-100 ring-1 ring-rose-400/30 transition hover:bg-rose-500/30"
-                >
-                  Reset stats
-                </button>
-              </div>
+        {/* Center: Stats (responsive) */}
+        <div className="flex items-center gap-3 md:gap-4 flex-1 justify-center md:justify-start">
+          <div className="text-xs font-mono text-slate-300">
+            NPM <span className="font-semibold text-emerald-400 text-sm">{notesPerMinute.toFixed(1)}</span>
+          </div>
+          <div className="text-xs font-mono text-slate-300">
+            ACC <span className="font-semibold text-blue-400 text-sm">{attempts === 0 ? 0 : Math.round((score / attempts) * 100)}%</span>
+          </div>
+          {/* Streak: Hidden on mobile, shown on md+ */}
+          <div className="hidden md:block text-xs font-mono text-slate-300">
+            STREAK <span className="font-semibold text-amber-400 text-sm">{streak}</span>
+          </div>
+        </div>
 
+        {/* Right: Action Icons */}
+        <div className="flex items-center gap-1">
+          <MemoryAidsModal />
+          <button
+            onClick={() => setFeedback({ type: "neutral", text: `The note is: ${current.spelling.letter}${current.spelling.accidental}` })}
+            className="p-2 text-slate-400 hover:text-slate-200 transition-colors"
+            title="Reveal answer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <button
+            onClick={handleResetStats}
+            className="p-2 text-slate-400 hover:text-rose-400 transition-colors"
+            title="Reset stats"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <SettingsDrawer
+            rangeId={rangeId}
+            clef={clef}
+            keySigId={keySigId}
+            difficulty={difficulty}
+            showHints={showHints}
+            currentNote={current}
+            range={range}
+            keySig={keySig}
+            onRangeChange={setRangeId}
+            onClefChange={setClef}
+            onKeySigChange={setKeySigId}
+            onDifficultyChange={setDifficulty}
+            onShowHintsChange={setShowHints}
+            noteNaming={noteNaming}
+            onNoteNamingChange={setNoteNaming}
+            autoAdvance={autoAdvance}
+            onAutoAdvanceChange={setAutoAdvance}
+            visualHint={visualHint}
+            onVisualHintChange={setVisualHint}
+          />
+        </div>
+      </div>
+
+      {/* Main Content Area - Mobile First with sticky piano */}
+      <div className="flex-1 flex flex-col md:block md:px-4 md:py-4 pb-0 md:pb-4">
+        {/* The Stage - Staff Card */}
+        <div className="flex-1 flex flex-col md:max-w-5xl md:mx-auto md:block overflow-y-auto md:overflow-visible">
+          <div className="flex-1 rounded-none md:rounded-[2rem] bg-white shadow-2xl shadow-white/5 p-3 sm:p-5 flex flex-col min-h-0">
+            {/* Feedback pill */}
+            <div className={`mb-3 rounded-full px-3 py-1.5 text-xs sm:text-sm text-center transition-all duration-200 ${
+              feedback.type === "good"
+                ? "bg-emerald-500 text-white ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/50 font-semibold"
+                : feedback.type === "bad"
+                  ? "bg-rose-500 text-white ring-2 ring-rose-400 shadow-lg shadow-rose-500/50 font-semibold"
+                  : "bg-slate-700 text-slate-200 ring-1 ring-slate-600"
+            }`}>
+              {feedback.text}
+            </div>
+
+            {/* Musical Staff */}
+            <div className="animate-slide-in">
               <StaveDisplay
                 note={current}
                 clef={clef}
                 keySig={keySig}
                 flashState={flashState}
+                playedMidi={flashMidi}
               />
+            </div>
 
-              <div className="mt-3 flex flex-wrap items-center gap-3">
+            {/* Action buttons - Hidden on mobile, shown on md+ */}
+            <div className="mt-3 hidden md:flex flex-wrap items-center gap-2">
+              {!autoAdvance && (
                 <button
                   onClick={() => next()}
-                  className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100 ring-1 ring-white/10 hover:bg-white/15"
+                  className="rounded-xl bg-slate-900 text-slate-100 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-slate-800 transition"
                 >
                   Next
                 </button>
+              )}
 
-                <button
-                  onClick={async () => {
-                    await ensureAudioStarted();
-                    playMidi(current.midi);
-                  }}
-                  className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100 ring-1 ring-white/10 hover:bg-white/15"
-                >
-                  Play note
-                </button>
-              </div>
-
-              <PianoKeyboard
-                minMidi={range.minMidi}
-                maxMidi={range.maxMidi}
-                currentNote={current}
-                includeAccidentals={includeAccidentals}
-                midiChoices={midiChoices}
-                keySigPref={keySig.pref}
-                showHints={showHints}
-                noteNaming={noteNaming}
-                hintForced={hintForced}
-                flashMidi={flashMidi}
-                flashState={flashState}
-                onKeyPress={(midi) => void submitMidi(midi)}
-              />
-
-              {sessionSummary ? (
-                <div className="mt-4 rounded-2xl bg-emerald-500/10 p-4 ring-1 ring-emerald-400/30">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <div className="text-sm font-semibold text-emerald-100">Session Summary</div>
-                      <div className="text-xs text-emerald-200/80">
-                        After {sessionSummary.correct} correct notes
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setSessionSummary(null)}
-                      className="rounded-xl bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/30 hover:bg-emerald-500/30"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-emerald-50 sm:grid-cols-3">
-                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
-                      <div className="text-xs text-emerald-200/80">Avg NPM</div>
-                      <div className="text-lg font-semibold">{sessionSummary.avgNpm}</div>
-                    </div>
-                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
-                      <div className="text-xs text-emerald-200/80">Accuracy</div>
-                      <div className="text-lg font-semibold">{sessionSummary.accuracy}%</div>
-                    </div>
-                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
-                      <div className="text-xs text-emerald-200/80">Attempts</div>
-                      <div className="text-lg font-semibold">{sessionSummary.attempts}</div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="mt-4 space-y-3 rounded-2xl bg-slate-900/50 p-3 ring-1 ring-white/10">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-slate-100">Memory aids</div>
-                    <div className="text-xs text-slate-400">Quick mnemonics for both clefs.</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
-                  <div className="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-400/20">
-                    <div className="font-semibold text-blue-100 text-sm">Treble lines (EGBDF)</div>
-                    <div className="text-blue-200/80">Every Good Boy Deserves Fruit</div>
-                  </div>
-                  <div className="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-400/20">
-                    <div className="font-semibold text-blue-100 text-sm">Treble spaces (FACE)</div>
-                    <div className="text-blue-200/80">FACE spells FACE</div>
-                  </div>
-                  <div className="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-400/20">
-                    <div className="font-semibold text-blue-100 text-sm">Bass lines (GBDFA)</div>
-                    <div className="text-blue-200/80">Good Burritos Don't Fall Apart</div>
-                  </div>
-                  <div className="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-400/20">
-                    <div className="font-semibold text-blue-100 text-sm">Bass spaces (ACEG)</div>
-                    <div className="text-blue-200/80">All Cows Eat Grass</div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-300 ring-1 ring-white/10">
-                  Weak notes are selected more often based on recent accuracy. Stats are stored locally in your browser.
-                </div>
-              </div>
+              <button
+                onClick={async () => {
+                  await ensureAudioStarted();
+                  playMidi(current.midi);
+                }}
+                className="rounded-xl bg-slate-900 text-slate-100 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 hover:bg-slate-800 transition"
+              >
+                Play note
+              </button>
             </div>
 
-            <SettingsPanel
-              rangeId={rangeId}
-              clef={clef}
-              keySigId={keySigId}
-              difficulty={difficulty}
-              showHints={showHints}
-              noteNaming={noteNaming}
-              autoAdvance={autoAdvance}
-              visualHint={visualHint}
-              currentNote={current}
-              range={range}
-              keySig={keySig}
-              onRangeChange={setRangeId}
-              onClefChange={setClef}
-              onKeySigChange={setKeySigId}
-              onDifficultyChange={setDifficulty}
-              onShowHintsChange={setShowHints}
-              onNoteNamingChange={setNoteNaming}
-              onAutoAdvanceChange={setAutoAdvance}
-              onVisualHintChange={setVisualHint}
-            />
+            {/* Session Summary Modal - Hidden on mobile to save space */}
+            {sessionSummary ? (
+              <div className="mt-3 rounded-xl md:rounded-2xl bg-emerald-500/10 p-3 md:p-4 ring-1 ring-emerald-400/30">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs md:text-sm font-semibold text-emerald-100">Session Summary</div>
+                    <div className="text-xs text-emerald-200/80">
+                      After {sessionSummary.correct} correct notes
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSessionSummary(null)}
+                    className="rounded-lg md:rounded-xl bg-emerald-500/20 px-3 py-1.5 md:py-2 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/30 hover:bg-emerald-500/30"
+                  >
+                    Continue
+                  </button>
+                </div>
+                <div className="mt-2 md:mt-3 grid grid-cols-3 gap-2 text-xs md:text-sm text-emerald-50">
+                  <div className="rounded-lg bg-white/5 p-2 md:p-3 ring-1 ring-white/10">
+                    <div className="text-xs text-emerald-200/80">Avg NPM</div>
+                    <div className="text-base md:text-lg font-semibold">{sessionSummary.avgNpm}</div>
+                  </div>
+                  <div className="rounded-lg bg-white/5 p-2 md:p-3 ring-1 ring-white/10">
+                    <div className="text-xs text-emerald-200/80">Accuracy</div>
+                    <div className="text-base md:text-lg font-semibold">{sessionSummary.accuracy}%</div>
+                  </div>
+                  <div className="rounded-lg bg-white/5 p-2 md:p-3 ring-1 ring-white/10">
+                    <div className="text-xs text-emerald-200/80">Attempts</div>
+                    <div className="text-base md:text-lg font-semibold">{sessionSummary.attempts}</div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
+        </div>
+
+        {/* Piano Keyboard - Sticky at bottom on mobile, relative on desktop */}
+        <div className="sticky bottom-0 md:relative md:max-w-5xl md:mx-auto md:mt-4 bg-zinc-950 md:bg-transparent z-10">
+          <PianoKeyboard
+            minMidi={range.minMidi}
+            maxMidi={range.maxMidi}
+            currentNote={current}
+            includeAccidentals={includeAccidentals}
+            midiChoices={midiChoices}
+            keySigPref={keySig.pref}
+            showHints={showHints}
+            noteNaming={noteNaming}
+            hintForced={hintForced}
+            flashMidi={flashMidi}
+            flashState={flashState}
+            onKeyPress={(midi) => void submitMidi(midi)}
+          />
         </div>
       </div>
     </div>

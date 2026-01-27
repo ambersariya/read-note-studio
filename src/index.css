@@ -3,8 +3,63 @@
 /* Match body background to app to avoid light gaps near iOS safe areas */
 html,
 body {
-  background-color: #020617; /* slate-950 */
+  background-color: #09090b; /* zinc-950 */
   min-height: 100%;
+  overflow: hidden;
+}
+
+/* Safe area support for mobile devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbar on mobile for cleaner piano UI */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.animate-shake {
+  animation: shake 340ms ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 280ms ease-out;
+}
+
+.animate-pop-success {
+  animation: pop-success 320ms ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pop-success {
+  0% { transform: scale(1); opacity: 1; }
+  60% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 280ms ease-out;
 }
 
 .no-scrollbar {
@@ -15,15 +70,22 @@ body {
 }
 
 .piano-keyboard {
-  --white-key-width: 2.5rem;
-  --black-key-width: 1.65rem;
+  --white-key-width: 1.8rem;
+  --black-key-width: 1.2rem;
   --black-offset: calc((var(--white-key-width) - var(--black-key-width)) / 2);
 }
 
 @media (min-width: 640px) {
   .piano-keyboard {
-    --white-key-width: 3rem;
-    --black-key-width: 2rem;
+    --white-key-width: 2.2rem;
+    --black-key-width: 1.45rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .piano-keyboard {
+    --white-key-width: 2.6rem;
+    --black-key-width: 1.7rem;
   }
 }
 
