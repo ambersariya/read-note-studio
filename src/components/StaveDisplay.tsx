@@ -26,7 +26,6 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
 
     // Dynamically calculate dimensions based on container
     const containerWidth = el.clientWidth;
-    const containerHeight = el.clientHeight;
 
     // Calculate scale based on container width
     const scale = Math.max(Math.min(containerWidth / 300, 3.5), 1.5);
