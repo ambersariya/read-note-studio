@@ -3,15 +3,16 @@ import { useRef, useEffect } from "react";
 import Flow from "vexflow";
 import { vexKeyForNote } from "../utils/noteUtils";
 
-const STROKE = "#0f172a"; // dark stroke for visibility on light card
+const STROKE = "#0f172a"; // dark stroke for visibility on light panel
 
 interface StaveDisplayProps {
   note: Note;
   clef: Clef;
   keySig: KeySig;
+  flashState?: "neutral" | "good" | "bad";
 }
 
-export function StaveDisplay({ note, clef, keySig }: StaveDisplayProps) {
+export function StaveDisplay({ note, clef, keySig, flashState = "neutral" }: StaveDisplayProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export function StaveDisplay({ note, clef, keySig }: StaveDisplayProps) {
     }
 
     const voice = new Voice({ numBeats: 1, beatValue: 4 });
-    // Flashcards are measure-free: allow incomplete measures.
+    // Exercises are measure-free: allow incomplete measures.
     voice.setMode(Flow.Voice.Mode.SOFT);
     voice.addTickables([staveNote]);
 
@@ -63,8 +64,15 @@ export function StaveDisplay({ note, clef, keySig }: StaveDisplayProps) {
     voice.draw(context, stave);
   }, [note, clef, keySig]);
 
+  const flashClass =
+    flashState === "bad"
+      ? "stave-flash-bad ring-2 ring-rose-400/70 shadow-[0_0_0_6px_rgba(248,113,113,0.25)]"
+      : flashState === "good"
+        ? "ring-2 ring-emerald-300/60"
+        : "";
+
   return (
-    <div className="rounded-xl bg-white p-2 overflow-hidden">
+    <div className={`rounded-xl bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`}>
       <div ref={containerRef} className="w-full" />
     </div>
   );

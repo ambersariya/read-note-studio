@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Clef, Feedback, Note, StatsMap } from "./types";
 import { KEY_SIGS, RANGES } from "./utils/constants";
 import {
@@ -56,10 +56,25 @@ export default function App() {
   });
   const [score, setScore] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
+  const [attempts, setAttempts] = useState<number>(0);
+  const [notesPerMinute, setNotesPerMinute] = useState<number>(0);
+  const [sessionSummary, setSessionSummary] = useState<{
+    avgNpm: number;
+    accuracy: number;
+    correct: number;
+    attempts: number;
+  } | null>(null);
   const [feedback, setFeedback] = useState<Feedback>({ 
     type: "neutral", 
     text: "Click a piano key to answer." 
   });
+  const [flashState, setFlashState] = useState<"neutral" | "good" | "bad">("neutral");
+  const [flashMidi, setFlashMidi] = useState<number | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
+  const flashTimerRef = useRef<number | null>(null);
+  const npmIntervalRef = useRef<number | null>(null);
+  const correctCountRef = useRef<number>(0);
+  const attemptsRef = useRef<number>(0);
 
   const midiChoices = useMemo(
     () => buildMidiRange(range.minMidi, range.maxMidi, includeAccidentals),
@@ -88,6 +103,15 @@ export default function App() {
     }
   }, [rangeId, clef, keySigId, difficulty, showHints]);
 
+  // Clear any flash timer on unmount
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current !== null) {
+        window.clearTimeout(flashTimerRef.current);
+      }
+    };
+  }, []);
+
   function pickNextNote(avoidMidi?: number): Note {
     const weights = midiChoices.map((m) => weightForMidi(stats, m));
 
@@ -108,7 +132,7 @@ export default function App() {
     return { midi, spelling: spellMidi(midi, keySig.pref) };
   }
 
-  // When settings change, refresh the card
+  // When settings change, refresh the exercise note
   useEffect(() => {
     const next = pickNextNote(current.midi);
     setCurrent(next);
@@ -126,6 +150,10 @@ export default function App() {
     await ensureAudioStarted();
 
     const correct = answerMidi === current.midi;
+    const now = Date.now();
+    const nextAttempts = attemptsRef.current + 1;
+    attemptsRef.current = nextAttempts;
+    setAttempts(nextAttempts);
 
     // Only play the clicked note
     playMidi(answerMidi);
@@ -136,6 +164,38 @@ export default function App() {
       setScore((v) => v + 1);
       setStreak((v) => v + 1);
       setFeedback({ type: "good", text: `✅ Correct: ${noteLabel(current)}` });
+      setFlashState("good");
+      setFlashMidi(null);
+
+      const nextCorrect = correctCountRef.current + 1;
+      correctCountRef.current = nextCorrect;
+
+      if (sessionStartRef.current === null) {
+        sessionStartRef.current = now;
+        if (npmIntervalRef.current !== null) {
+          window.clearInterval(npmIntervalRef.current);
+        }
+        npmIntervalRef.current = window.setInterval(() => {
+          const start = sessionStartRef.current;
+          if (!start) return;
+          const seconds = Math.max((Date.now() - start) / 1000, 1);
+          const npm = (correctCountRef.current / seconds) * 60;
+          setNotesPerMinute(Number(npm.toFixed(1)));
+        }, 1000);
+      }
+
+      if (nextCorrect % 20 === 0) {
+        const start = sessionStartRef.current ?? now;
+        const seconds = Math.max((now - start) / 1000, 1);
+        const avgNpm = (correctCountRef.current / seconds) * 60;
+        const accuracy = attemptsRef.current === 0 ? 0 : Math.round((correctCountRef.current / attemptsRef.current) * 100);
+        setSessionSummary({
+          avgNpm: Number(avgNpm.toFixed(1)),
+          accuracy,
+          correct: correctCountRef.current,
+          attempts: attemptsRef.current,
+        });
+      }
     } else {
       setStreak(0);
       const your = { midi: answerMidi, spelling: spellMidi(answerMidi, keySig.pref) };
@@ -143,7 +203,17 @@ export default function App() {
         type: "bad", 
         text: `❌ Nope — it was ${noteLabel(current)} (you played ${noteLabel(your)})` 
       });
+      setFlashState("bad");
+      setFlashMidi(answerMidi);
     }
+
+    if (flashTimerRef.current !== null) {
+      window.clearTimeout(flashTimerRef.current);
+    }
+    flashTimerRef.current = window.setTimeout(() => {
+      setFlashState("neutral");
+      setFlashMidi(null);
+    }, 320);
 
     window.setTimeout(() => next(current.midi), 700);
   };
@@ -152,6 +222,16 @@ export default function App() {
     setStats({});
     setScore(0);
     setStreak(0);
+    setAttempts(0);
+    setNotesPerMinute(0);
+    correctCountRef.current = 0;
+    attemptsRef.current = 0;
+    setSessionSummary(null);
+    sessionStartRef.current = null;
+    if (npmIntervalRef.current !== null) {
+      window.clearInterval(npmIntervalRef.current);
+      npmIntervalRef.current = null;
+    }
     setFeedback({ type: "neutral", text: "Stats cleared. What note is this?" });
     next();
   };
@@ -162,19 +242,30 @@ export default function App() {
         <div className="rounded-3xl bg-slate-900/70 p-4 shadow-2xl ring-1 ring-white/10 sm:p-6">
           <header className="mb-4 sm:mb-5">
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-              ReadNote
+              ReadNote: Piano Sight-Reading Trainer
               <span className="ml-2 text-xs font-normal text-slate-400 sm:ml-3 sm:text-sm">v{APP_VERSION}</span>
             </h1>
             <p className="mt-1 text-sm text-slate-300 sm:text-base">
-              Piano note flashcards for learning the staff. Click the on-screen piano to answer, and replay notes for ear training.
+              Active trainer for rapid note recognition. Play the note on your keyboard, MIDI controller, or on-screen piano; instant feedback keeps you moving.
             </p>
           </header>
 
           <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-[1fr_360px]">
             <div className="rounded-2xl bg-slate-950/40 p-4 shadow-lg ring-1 ring-white/10 sm:p-5">
-              <ScoreBoard score={score} streak={streak} feedback={feedback} />
+              <ScoreBoard
+                score={score}
+                streak={streak}
+                feedback={feedback}
+                notesPerMinute={notesPerMinute}
+                attempts={attempts}
+              />
 
-              <StaveDisplay note={current} clef={clef} keySig={keySig} />
+              <StaveDisplay
+                note={current}
+                clef={clef}
+                keySig={keySig}
+                flashState={flashState}
+              />
 
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <button
@@ -203,8 +294,43 @@ export default function App() {
                 midiChoices={midiChoices}
                 keySigPref={keySig.pref}
                 showHints={showHints}
+                flashMidi={flashMidi}
+                flashState={flashState}
                 onKeyPress={(midi) => void submitMidi(midi)}
               />
+
+              {sessionSummary ? (
+                <div className="mt-4 rounded-2xl bg-emerald-500/10 p-4 ring-1 ring-emerald-400/30">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-emerald-100">Session Summary</div>
+                      <div className="text-xs text-emerald-200/80">
+                        After {sessionSummary.correct} correct notes
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSessionSummary(null)}
+                      className="rounded-xl bg-emerald-500/20 px-3 py-2 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-400/30 hover:bg-emerald-500/30"
+                    >
+                      Continue
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm text-emerald-50 sm:grid-cols-3">
+                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
+                      <div className="text-xs text-emerald-200/80">Avg NPM</div>
+                      <div className="text-lg font-semibold">{sessionSummary.avgNpm}</div>
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
+                      <div className="text-xs text-emerald-200/80">Accuracy</div>
+                      <div className="text-lg font-semibold">{sessionSummary.accuracy}%</div>
+                    </div>
+                    <div className="rounded-lg bg-white/5 p-3 ring-1 ring-white/10">
+                      <div className="text-xs text-emerald-200/80">Attempts</div>
+                      <div className="text-lg font-semibold">{sessionSummary.attempts}</div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="mt-4 space-y-4 rounded-2xl bg-slate-900/50 p-4 ring-1 ring-white/10">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

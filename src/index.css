@@ -36,3 +36,18 @@ body {
   width: var(--black-key-width);
   left: calc((var(--key-index) + 1) * var(--white-key-width) - var(--black-offset));
 }
+
+/* Short visual flashes for incorrect answers */
+@keyframes flash-ring-bad {
+  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(248, 113, 113, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+.stave-flash-bad {
+  animation: flash-ring-bad 0.35s ease;
+}
+
+.key-flash-bad {
+  animation: flash-ring-bad 0.35s ease;
+}

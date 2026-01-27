@@ -164,7 +164,7 @@ export function SettingsPanel({
       </div>
 
       <div className="mt-4 rounded-xl bg-slate-800/50 p-3 text-xs text-slate-300 ring-1 ring-white/10">
-        <div className="font-semibold text-slate-200">Current card</div>
+        <div className="font-semibold text-slate-200">Current note</div>
         <div className="mt-1">{noteLabel(currentNote)}</div>
         <div className="mt-2 text-slate-400">
           Range:{" "}

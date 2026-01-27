@@ -11,6 +11,8 @@ interface PianoKeyboardProps {
   keySigPref: AccidentalPref;
   showHints: boolean;
   onKeyPress: (midi: number) => void;
+  flashMidi?: number | null;
+  flashState?: "neutral" | "good" | "bad";
 }
 
 export function PianoKeyboard({
@@ -22,6 +24,8 @@ export function PianoKeyboard({
   keySigPref,
   showHints,
   onKeyPress,
+  flashMidi = null,
+  flashState = "neutral",
 }: PianoKeyboardProps) {
   const pianoMidi = useMemo(() => {
     // Expand a little to start/end on white keys for nicer layout
@@ -77,6 +81,7 @@ export function PianoKeyboard({
             {whiteKeys.map((m) => {
               const active = m === currentNote.midi;
               const enabled = isInAnswerSet(m);
+              const flashBad = flashState === "bad" && flashMidi === m;
               return (
                 <button
                   key={m}
@@ -86,7 +91,8 @@ export function PianoKeyboard({
                   className={
                     "white-key relative h-32 border border-slate-300/40 bg-slate-50 text-slate-900 rounded-b " +
                     "hover:bg-white active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed " +
-                    "sm:h-44"
+                    "sm:h-44 " +
+                    (flashBad ? "key-flash-bad ring-2 ring-rose-400/80" : "")
                   }
                 >
                   <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
@@ -102,6 +108,7 @@ export function PianoKeyboard({
           {blackKeys.map(({ midi, cssIndex }) => {
             const active = midi === currentNote.midi;
             const enabled = includeAccidentals && isInAnswerSet(midi);
+            const flashBad = flashState === "bad" && flashMidi === midi;
             
             return (
               <button
@@ -112,7 +119,8 @@ export function PianoKeyboard({
                 className={
                   `black-key absolute top-3 h-24 rounded-b-lg bg-slate-950 text-slate-100 ring-1 ring-black/30 ` +
                   `hover:bg-slate-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
-                  `sm:h-32`
+                  `sm:h-32 ` +
+                  (flashBad ? "key-flash-bad ring-2 ring-rose-400/80" : "")
                 }
                 style={{ "--key-index": cssIndex } as CSSProperties}
               >
