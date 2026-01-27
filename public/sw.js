@@ -1,5 +1,5 @@
 // Service Worker for PWA offline support
-const CACHE_NAME = 'piano-flashcards-v1.2.1';
+const CACHE_NAME = 'piano-flashcards-v1.3.0';
 const urlsToCache = [
   '/piano-flashcards/',
   '/piano-flashcards/index.html',
