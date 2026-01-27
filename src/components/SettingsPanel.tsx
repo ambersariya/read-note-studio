@@ -185,7 +185,7 @@ export function SettingsPanel({
           <div className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
             <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
               <div className="font-semibold text-blue-200">Treble lines (EGBDF)</div>
-              <div className="text-blue-300/80">Every Good Boy Deserves Fudge</div>
+              <div className="text-blue-300/80">Every Good Boy Deserves Fruit</div>
             </div>
             <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
               <div className="font-semibold text-blue-200">Treble spaces (FACE)</div>
@@ -193,7 +193,7 @@ export function SettingsPanel({
             </div>
             <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
               <div className="font-semibold text-blue-200">Bass lines (GBDFA)</div>
-              <div className="text-blue-300/80">Good Boys Do Fine Always</div>
+              <div className="text-blue-300/80">Good Burritos Don't Fall Apart</div>
             </div>
             <div className="rounded-lg bg-blue-900/30 p-2 ring-1 ring-blue-400/20">
               <div className="font-semibold text-blue-200">Bass spaces (ACEG)</div>
