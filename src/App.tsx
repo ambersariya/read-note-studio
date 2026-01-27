@@ -246,19 +246,29 @@ export default function App() {
               <span className="ml-2 text-xs font-normal text-slate-400 sm:ml-3 sm:text-sm">v{APP_VERSION}</span>
             </h1>
             <p className="mt-1 text-sm text-slate-300 sm:text-base">
-              Active trainer for rapid note recognition. Play the note on your keyboard, MIDI controller, or on-screen piano; instant feedback keeps you moving.
+              Active trainer for rapid note recognition. Play the note on the on-screen piano; instant feedback keeps you moving.
             </p>
           </header>
 
           <div className="flex flex-col gap-4 sm:gap-6 lg:grid lg:grid-cols-[1fr_360px]">
             <div className="rounded-2xl bg-slate-950/40 p-4 shadow-lg ring-1 ring-white/10 sm:p-5">
-              <ScoreBoard
-                score={score}
-                streak={streak}
-                feedback={feedback}
-                notesPerMinute={notesPerMinute}
-                attempts={attempts}
-              />
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1">
+                  <ScoreBoard
+                    score={score}
+                    streak={streak}
+                    feedback={feedback}
+                    notesPerMinute={notesPerMinute}
+                    attempts={attempts}
+                  />
+                </div>
+                <button
+                  onClick={handleResetStats}
+                  className="self-start rounded-xl bg-rose-500/20 px-4 py-2 text-sm font-semibold text-rose-100 ring-1 ring-rose-400/30 transition hover:bg-rose-500/30"
+                >
+                  Reset stats
+                </button>
+              </div>
 
               <StaveDisplay
                 note={current}
