@@ -1,44 +1,37 @@
 {
-  "name": "ReadNote",
+  "name": "ReadNote Studio",
   "short_name": "ReadNote",
-  "description": "Piano note flashcards with interactive practice and spaced repetition",
-  "start_url": "/piano-flashcards/",
+  "description": "Piano sight-reading trainer with MIDI/keyboard input and instant feedback.",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "orientation": "any",
+  "orientation": "portrait",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
     {
-      "src": "/piano-flashcards/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/piano-flashcards/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/piano-flashcards/icon-192-maskable.png",
+      "src": "/icon-192-maskable.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/piano-flashcards/icon-512-maskable.png",
+      "src": "/icon-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "categories": ["education", "music"],
-  "shortcuts": [
-    {
-      "name": "Start Practice",
-      "url": "/piano-flashcards/",
-      "description": "Begin piano note practice"
+      "purpose": "maskable any"
     }
   ]
 }
