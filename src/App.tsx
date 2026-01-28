@@ -389,34 +389,48 @@ export default function App() {
 
             {/* Session Summary Modal */}
             {sessionSummary ? (
-              <div className="mt-2 md:mt-3 rounded-lg bg-emerald-500/10 p-2 md:p-4 border border-emerald-400/30">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="text-xs md:text-sm font-semibold text-emerald-100">Session Summary</div>
-                    <div className="text-xs text-emerald-200/80">
-                      After {sessionSummary.correct} correct notes
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="w-full max-w-sm rounded-lg bg-emerald-50 p-4 md:p-5 border border-emerald-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-bold text-emerald-900">Session Summary</div>
+                      <div className="text-xs text-emerald-800">
+                        After {sessionSummary.correct} correct notes
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSessionSummary(null)}
+                      className="rounded-full p-2 text-emerald-700 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                      aria-label="Close summary"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs md:text-sm">
+                    <div className="rounded-md bg-white p-2 md:p-3 border border-emerald-100 shadow-sm">
+                      <div className="text-xs font-semibold text-emerald-700">Avg NPM</div>
+                      <div className="text-[8px] font-normal opacity-70 text-emerald-700">(Notes Per Minute)</div>
+                      <div className="text-base md:text-lg font-semibold text-emerald-950">{sessionSummary.avgNpm}</div>
+                    </div>
+                    <div className="rounded-md bg-white p-2 md:p-3 border border-emerald-100 shadow-sm">
+                      <div className="text-xs font-semibold text-emerald-700">Accuracy</div>
+                      <div className="text-base md:text-lg font-semibold text-emerald-950">{sessionSummary.accuracy}%</div>
+                    </div>
+                    <div className="rounded-md bg-white p-2 md:p-3 border border-emerald-100 shadow-sm">
+                      <div className="text-xs font-semibold text-emerald-700">Attempts</div>
+                      <div className="text-base md:text-lg font-semibold text-emerald-950">{sessionSummary.attempts}</div>
                     </div>
                   </div>
+
                   <button
                     onClick={() => setSessionSummary(null)}
-                    className="rounded-md bg-emerald-500/20 px-3 py-1.5 text-xs font-semibold text-emerald-100 border border-emerald-400/30 hover:bg-emerald-500/30"
+                    className="mt-4 w-full rounded-md bg-emerald-600 px-3 py-2 text-sm font-bold text-white shadow-md hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
                   >
                     Continue
                   </button>
-                </div>
-                <div className="mt-2 md:mt-3 grid grid-cols-3 gap-2 text-xs md:text-sm text-emerald-50">
-                  <div className="rounded-md bg-white/5 p-2 md:p-3 border border-white/10">
-                    <div className="text-xs text-emerald-200/80">Avg NPM</div>
-                    <div className="text-base md:text-lg font-semibold">{sessionSummary.avgNpm}</div>
-                  </div>
-                  <div className="rounded-md bg-white/5 p-2 md:p-3 border border-white/10">
-                    <div className="text-xs text-emerald-200/80">Accuracy</div>
-                    <div className="text-base md:text-lg font-semibold">{sessionSummary.accuracy}%</div>
-                  </div>
-                  <div className="rounded-md bg-white/5 p-2 md:p-3 border border-white/10">
-                    <div className="text-xs text-emerald-200/80">Attempts</div>
-                    <div className="text-base md:text-lg font-semibold">{sessionSummary.attempts}</div>
-                  </div>
                 </div>
               </div>
             ) : null}
