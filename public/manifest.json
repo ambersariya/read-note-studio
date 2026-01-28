@@ -1,7 +1,7 @@
 {
   "name": "ReadNote Studio",
   "short_name": "ReadNote",
-  "description": "Piano sight-reading trainer with MIDI/keyboard input and instant feedback.",
+  "description": "Piano sight-reading trainer to help you learn to read sheet music faster.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
