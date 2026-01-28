@@ -113,3 +113,18 @@ body {
 .key-flash-bad {
   animation: flash-ring-bad 0.35s ease;
 }
+
+/* Mobile touch responsiveness & scroll safety */
+button,
+.piano-key,
+input,
+.piano-keyboard .white-key,
+.piano-keyboard .black-key {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.piano-keyboard {
+  user-select: none;
+  overscroll-behavior: none;
+}
