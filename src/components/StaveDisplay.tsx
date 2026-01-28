@@ -28,7 +28,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     const containerWidth = el.clientWidth;
 
     // Calculate scale based on container width
-    const scale = Math.max(Math.min(containerWidth / 300, 4.5), 2.5);
+    const scale = Math.max(Math.min(containerWidth / 300, 4.5), 2.0);
 
     const drawWidth = containerWidth / scale;
     // Staff only needs ~140px of height (includes clef, key sig, note, and margins)
