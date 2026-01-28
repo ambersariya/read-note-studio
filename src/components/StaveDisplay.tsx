@@ -28,7 +28,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     const containerWidth = el.clientWidth;
 
     // Calculate scale based on container width
-    const scale = Math.max(Math.min(containerWidth / 300, 3.5), 1.5);
+    const scale = Math.max(Math.min(containerWidth / 300, 4.5), 3.0);
 
     const drawWidth = containerWidth / scale;
     // Staff only needs ~140px of height (includes clef, key sig, note, and margins)
@@ -85,7 +85,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     voice.setMode(Flow.Voice.Mode.SOFT);
     voice.addTickables(tickables);
 
-    new Formatter().joinVoices([voice]).format([voice], 240);
+    new Formatter().joinVoices([voice]).format([voice], 300);
     voice.draw(context, stave);
   }, [note, clef, keySig, playedMidi]);
 

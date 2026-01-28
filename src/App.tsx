@@ -342,9 +342,9 @@ export default function App() {
       <div className="flex-1 flex flex-col md:px-4 md:py-4 overflow-hidden">
         {/* The Stage - Staff Card (Flex-1 to fill vertical space) */}
         <div className="flex-1 flex flex-col md:max-w-5xl md:mx-auto md:w-full overflow-y-auto md:overflow-visible min-h-0">
-          <div className="flex-1 rounded-none md:rounded-xl bg-white p-2 md:p-5 flex flex-col min-h-0">
+          <div className="flex-1 rounded-none md:rounded-xl bg-white p-2 md:p-3 flex flex-col min-h-0">
             {/* Feedback pill */}
-            <div className={`mb-2 md:mb-3 rounded-lg px-3 py-1.5 text-xs sm:text-sm text-center transition-all duration-200 ${
+            <div className={`mb-1 md:mb-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm text-center transition-all duration-200 ${
               feedback.type === "good"
                 ? "bg-emerald-500 text-white ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/50 font-semibold"
                 : feedback.type === "bad"
@@ -366,7 +366,7 @@ export default function App() {
             </div>
 
             {/* Action buttons - Hidden on mobile, shown on md+ */}
-            <div className="mt-2 md:mt-3 hidden md:flex flex-wrap items-center gap-2">
+            <div className="mt-1 md:mt-1.5 hidden md:flex flex-wrap items-center gap-2">
               {!autoAdvance && (
                 <button
                   onClick={() => next()}
