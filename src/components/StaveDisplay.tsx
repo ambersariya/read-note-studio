@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import type { Clef, KeySig, Note } from "../types";
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import Flow from "vexflow";
 import { vexKeyForNote } from "../utils/noteUtils";
 
@@ -17,11 +17,6 @@ interface StaveDisplayProps {
 
 export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playedMidi = null }: StaveDisplayProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const renderStave = useCallback(() => {
     const el = containerRef.current;
@@ -123,18 +118,6 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
       : flashState === "good"
         ? "animate-pop-success border-2 border-emerald-400"
         : "";
-
-  if (!mounted) {
-    return (
-      <div className={`h-full rounded-lg bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`}>
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-full flex items-center justify-center px-4">
-            <div className="w-full max-w-md scale-125 sm:scale-110 md:scale-100" style={{ transformOrigin: "center" }} />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`h-full rounded-lg bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`}>
