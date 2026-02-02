@@ -40,6 +40,8 @@ export function PianoKeyboard({
   const [blockedMidi, setBlockedMidi] = useState<number | null>(null);
   const [idleLevel, setIdleLevel] = useState<0 | 1 | 2>(0);
   const lastInteractionRef = useRef<number>(Date.now());
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
 
   const registerInteraction = () => {
     lastInteractionRef.current = Date.now();
@@ -64,20 +66,85 @@ export function PianoKeyboard({
     return () => window.clearInterval(id);
   }, []);
 
-  const pianoMidi = useMemo(() => {
-    // Add a little context on wide screens (roughly an octave either side).
-    const padding = isWide ? 16 : 0;
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const updateWidth = () => setContainerWidth(el.clientWidth || window.innerWidth);
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
-    let min = Math.max(0, minMidi - padding);
-    while (isBlackKey(min) && min > 0) min--;
+  const { pianoMidi, whiteKeyWidthPx, blackKeyWidthPx, keyboardWidthPx } = useMemo(() => {
+    const MIN_KEY = 40;
+    const MAX_KEY = 60;
+    const FALLBACK_WIDTH = 360; // reasonable default if ref not ready
+    const width = containerWidth || FALLBACK_WIDTH;
 
-    let max = Math.min(127, maxMidi + padding);
-    while (isBlackKey(max) && max < 127) max++;
+    const minOctaves = 2; // ~1.5+ rounded to keep C anchors
+    const maxOctaves = Math.max(minOctaves, Math.floor(width / (MIN_KEY * 7)) || minOctaves);
+
+    const pickOctaves = (): number => {
+      // Try to keep key width ~50px within bounds
+      let octaves = Math.min(maxOctaves, Math.max(minOctaves, Math.floor(width / (50 * 7)) || minOctaves));
+      const keyWidth = width / (octaves * 7);
+      if (keyWidth < MIN_KEY) {
+        // reduce octaves until keys are at least MIN_KEY
+        while (octaves > minOctaves && width / ((octaves - 1) * 7) >= MIN_KEY) {
+          octaves -= 1;
+        }
+      } else if (keyWidth > MAX_KEY) {
+        // increase octaves if keys are too wide
+        while (octaves < maxOctaves && width / ((octaves + 1) * 7) > MIN_KEY) {
+          octaves += 1;
+          if (width / (octaves * 7) < MIN_KEY) {
+            octaves -= 1;
+            break;
+          }
+        }
+      }
+      return Math.max(minOctaves, Math.min(octaves, maxOctaves));
+    };
+
+    let octaves = pickOctaves();
+
+    // Ensure we cover the active range; expand octaves if needed.
+    const startC = Math.max(0, minMidi - (minMidi % 12));
+    const neededOctaves = Math.ceil((maxMidi - startC + 1) / 12);
+    if (neededOctaves > octaves) octaves = neededOctaves;
+
+    const keyWidthRaw = width / (octaves * 7);
+    const whiteKeyWidth = Math.max(32, Math.min(MAX_KEY, keyWidthRaw)); // allow slight squeeze if forced
+    const blackKeyWidth = whiteKeyWidth * 0.65;
+
+    // Build MIDI list anchored on C
+    let startMidi = startC;
+    let endMidi = startMidi + octaves * 12 - 1;
+    if (endMidi > 127) {
+      const over = endMidi - 127;
+      const shiftOctaves = Math.ceil(over / 12);
+      startMidi = Math.max(0, startMidi - shiftOctaves * 12);
+      endMidi = 127;
+    }
 
     const out: number[] = [];
-    for (let m = min; m <= max; m++) out.push(m);
-    return out;
-  }, [minMidi, maxMidi, isWide]);
+    for (let m = startMidi; m <= endMidi; m++) out.push(m);
+
+    const totalWidth = whiteKeyWidth * out.filter((m) => !isBlackKey(m)).length;
+
+    return {
+      pianoMidi: out,
+      whiteKeyWidthPx: whiteKeyWidth,
+      blackKeyWidthPx: blackKeyWidth,
+      keyboardWidthPx: totalWidth,
+    };
+  }, [containerWidth, minMidi, maxMidi]);
+
+  const scale = keyboardWidthPx && containerWidth ? Math.min(1, containerWidth / keyboardWidthPx) : 1;
+  const renderedWhiteWidth = whiteKeyWidthPx * scale;
+  const renderedBlackWidth = blackKeyWidthPx * scale;
+  const renderedKeyboardWidth = keyboardWidthPx * scale;
 
   const whiteKeys = useMemo(() => pianoMidi.filter((m) => !isBlackKey(m)), [pianoMidi]);
 
@@ -126,10 +193,8 @@ export function PianoKeyboard({
   };
 
   const renderWhiteKey = (midi: number) => {
-    const active = midi === currentNote.midi;
     const enabled = isInAnswerSet(midi);
     const flashBad = flashState === "bad" && flashMidi === midi;
-    const showHighlight = active && (showHints || hintForced);
     const label = whiteKeyLabel(midi, keySigPref, noteNaming);
     const showMiddleC = midi === 60;
     const isBlocked = blockedMidi === midi;
@@ -139,7 +204,7 @@ export function PianoKeyboard({
         key={midi}
         type="button"
         onClick={() => void handlePress(midi, enabled)}
-        aria-pressed={active}
+        aria-pressed={midi === currentNote.midi}
         aria-label={`${label}${midiToOctave(midi)}`}
         title={showKeyLabels ? `${label}${midiToOctave(midi)}` : undefined}
         aria-disabled={!enabled}
@@ -160,17 +225,13 @@ export function PianoKeyboard({
         {showMiddleC ? (
           <div className="absolute top-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-emerald-500/70 shadow-sm shadow-emerald-400/40" aria-hidden />
         ) : null}
-        {showHighlight ? <div className="absolute inset-x-1 top-1 h-3 rounded bg-emerald-500/60" aria-hidden /> : null}
       </button>
     );
   };
 
   const renderBlackKey = (midi: number, cssIndex: number) => {
-    const active = midi === currentNote.midi;
     const enabled = includeAccidentals && isInAnswerSet(midi);
     const flashBad = flashState === "bad" && flashMidi === midi;
-    const showHighlight = active && (showHints || hintForced);
-    const leftPos = ((cssIndex + 1) / whiteKeys.length) * 100;
     const label = noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming);
     const isBlocked = blockedMidi === midi;
 
@@ -179,7 +240,7 @@ export function PianoKeyboard({
         key={midi}
         type="button"
         onClick={() => void handlePress(midi, enabled)}
-        aria-pressed={active}
+        aria-pressed={midi === currentNote.midi}
         aria-label={label}
         title={showKeyLabels ? label : undefined}
         aria-disabled={!enabled}
@@ -189,13 +250,12 @@ export function PianoKeyboard({
         } ${isBlocked ? "animate-shake-soft ring-1 ring-zinc-500/40" : ""}`}
         style={
           {
-            left: `calc(${leftPos}% - (var(--black-key-width) / 2))`,
-            "--black-key-width": "clamp(17px, 5.5%, 30px)",
-            width: "var(--black-key-width)",
+            left: `${(cssIndex + 1) * renderedWhiteWidth - renderedBlackWidth / 2}px`,
+            width: `${renderedBlackWidth}px`,
+            "--black-key-width": `${renderedBlackWidth}px`,
           } as CSSProperties
         }
       >
-        {showHighlight ? <div className="mx-auto mt-2 h-2 w-5 rounded bg-emerald-400/70 sm:w-7" aria-hidden /> : null}
         {labelOpacity > 0 ? (
           <div
             className="absolute -bottom-1 left-0 right-0 text-center text-[10px] font-semibold text-white"
@@ -211,11 +271,23 @@ export function PianoKeyboard({
 
   return (
     <section className="h-full select-none" aria-label="Piano keyboard">
-      <div className="relative overflow-x-auto overflow-y-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[320px] min-h-[220px]">
-        <div className="piano-keyboard relative h-full min-w-full flex flex-col">
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[320px] min-h-[220px]"
+      >
+        <div
+          className="piano-keyboard relative h-full flex flex-col mx-auto"
+          style={
+            {
+              width: `${renderedKeyboardWidth}px`,
+              "--white-key-width": `${renderedWhiteWidth}px`,
+              "--black-key-width": `${renderedBlackWidth}px`,
+            } as CSSProperties
+          }
+        >
           <div className="h-2 bg-rose-500/90 rounded-t-sm shrink-0" aria-hidden />
-          <div className="relative flex pb-safe flex-1" role="group" aria-label="Piano keys">
-            <div className="flex flex-1">{whiteKeys.map(renderWhiteKey)}</div>
+          <div className="relative flex pb-safe flex-1 justify-center" role="group" aria-label="Piano keys">
+            <div className="flex">{whiteKeys.map(renderWhiteKey)}</div>
             {blackKeys.map(({ midi, cssIndex }) => renderBlackKey(midi, cssIndex))}
           </div>
         </div>
