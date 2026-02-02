@@ -405,7 +405,7 @@ export default function App() {
             {/* Session Summary Modal */}
             {sessionSummary ? (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                <div className="w-full max-w-sm rounded-lg bg-emerald-50 p-4 md:p-5 border border-emerald-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-full max-w-md md:max-w-2xl rounded-lg bg-emerald-50 p-5 md:p-6 border border-emerald-200 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="text-sm font-bold text-emerald-900">Session Summary</div>
