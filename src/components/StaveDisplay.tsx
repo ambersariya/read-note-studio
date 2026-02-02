@@ -30,7 +30,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     const containerWidth = el.clientWidth;
 
     // Calculate scale based on container width (slightly zoomed out to fit grand staff comfortably)
-    const scale = Math.max(Math.min(containerWidth / 420, 3.0), 1.3);
+    const scale = Math.max(Math.min(containerWidth / 420, 2.0), 1.3);
 
     const drawWidth = containerWidth / scale;
     // Room for a full grand staff (treble + bass)
