@@ -77,45 +77,31 @@ export function PianoKeyboard({
   }, []);
 
   const { pianoMidi, whiteKeyWidthPx, blackKeyWidthPx, keyboardWidthPx } = useMemo(() => {
+    const TARGET_KEY = 48;
     const MIN_KEY = 40;
     const MAX_KEY = 60;
     const FALLBACK_WIDTH = 360; // reasonable default if ref not ready
     const width = containerWidth || FALLBACK_WIDTH;
 
-    const minOctaves = 2; // ~1.5+ rounded to keep C anchors
-    const maxOctaves = Math.max(minOctaves, Math.floor(width / (MIN_KEY * 7)) || minOctaves);
+    const baseKeyWidth = Math.min(MAX_KEY, Math.max(MIN_KEY, TARGET_KEY));
+    const minOctaves = 2; // keep at least a two-octave anchor
 
-    const pickOctaves = (): number => {
-      // Try to keep key width ~50px within bounds
-      let octaves = Math.min(maxOctaves, Math.max(minOctaves, Math.floor(width / (50 * 7)) || minOctaves));
-      const keyWidth = width / (octaves * 7);
-      if (keyWidth < MIN_KEY) {
-        // reduce octaves until keys are at least MIN_KEY
-        while (octaves > minOctaves && width / ((octaves - 1) * 7) >= MIN_KEY) {
-          octaves -= 1;
-        }
-      } else if (keyWidth > MAX_KEY) {
-        // increase octaves if keys are too wide
-        while (octaves < maxOctaves && width / ((octaves + 1) * 7) > MIN_KEY) {
-          octaves += 1;
-          if (width / (octaves * 7) < MIN_KEY) {
-            octaves -= 1;
-            break;
-          }
-        }
-      }
-      return Math.max(minOctaves, Math.min(octaves, maxOctaves));
-    };
-
-    let octaves = pickOctaves();
+    // Start with as many octaves as fit at target key width.
+    let octaves = Math.max(minOctaves, Math.floor(width / (baseKeyWidth * 7)) || minOctaves);
 
     // Ensure we cover the active range; expand octaves if needed.
     const startC = Math.max(0, minMidi - (minMidi % 12));
     const neededOctaves = Math.ceil((maxMidi - startC + 1) / 12);
     if (neededOctaves > octaves) octaves = neededOctaves;
 
-    const keyWidthRaw = width / (octaves * 7);
-    const whiteKeyWidth = Math.max(32, Math.min(MAX_KEY, keyWidthRaw)); // allow slight squeeze if forced
+    // If required octaves overflow the container, allow a controlled shrink but never below MIN_KEY.
+    let whiteKeyWidth = baseKeyWidth;
+    const requiredWidth = octaves * 7 * whiteKeyWidth;
+    if (requiredWidth > width) {
+      const squeezed = width / (octaves * 7);
+      whiteKeyWidth = Math.max(MIN_KEY, Math.min(MAX_KEY, squeezed));
+    }
+
     const blackKeyWidth = whiteKeyWidth * 0.65;
 
     // Build MIDI list anchored on C
@@ -141,10 +127,10 @@ export function PianoKeyboard({
     };
   }, [containerWidth, minMidi, maxMidi]);
 
-  const scale = keyboardWidthPx && containerWidth ? Math.min(1, containerWidth / keyboardWidthPx) : 1;
-  const renderedWhiteWidth = whiteKeyWidthPx * scale;
-  const renderedBlackWidth = blackKeyWidthPx * scale;
-  const renderedKeyboardWidth = keyboardWidthPx * scale;
+  // Use calculated widths directly to avoid post-scale shrinking on resize.
+  const renderedWhiteWidth = whiteKeyWidthPx;
+  const renderedBlackWidth = blackKeyWidthPx;
+  const renderedKeyboardWidth = keyboardWidthPx;
 
   const whiteKeys = useMemo(() => pianoMidi.filter((m) => !isBlackKey(m)), [pianoMidi]);
 

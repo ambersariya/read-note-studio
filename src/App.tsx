@@ -407,10 +407,10 @@ export default function App() {
       </div>
 
       {/* Main Content Area - Mobile First with sticky piano */}
-      <div className="flex-1 flex flex-col md:px-4 md:py-3 overflow-hidden gap-3">
+      <div className="flex-1 flex flex-col px-0 md:px-0 md:py-3 overflow-hidden gap-3">
         {/* The Stage - Staff Card */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 rounded-none md:rounded-xl bg-white p-3 md:p-4 flex flex-col min-h-[320px] shadow-lg shadow-zinc-900/30">
+          <div className="flex-1 w-full bg-white p-3 md:p-4 flex flex-col min-h-[320px] shadow-lg shadow-zinc-900/30">
             {/* Feedback pill */}
             <div className={`mb-1 md:mb-1.5 rounded-lg px-3 py-1.5 ${
               isDefaultFeedback ? "text-sm sm:text-lg" : "text-xs sm:text-sm"
