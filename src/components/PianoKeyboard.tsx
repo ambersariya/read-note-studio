@@ -141,15 +141,16 @@ export function PianoKeyboard({
                     : undefined
                 }
                 className={
-                  `black-key absolute top-3 h-32 rounded-b-md bg-zinc-950 text-zinc-100 ` +
-                  `border border-black/30 hover:bg-zinc-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
+                  `black-key absolute top-3 h-32 rounded-b-md bg-black text-zinc-100 ` +
+                  `border border-zinc-800 hover:bg-zinc-900 active:bg-black ` +
+                  `disabled:opacity-40 disabled:bg-black disabled:text-zinc-300 disabled:border-zinc-800/80 disabled:cursor-not-allowed ` +
                   `pointer-events-auto z-10 ` +
                   (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                 }
                 style={
                   {
                     left: `calc(${leftPos}% - (var(--black-key-width) / 2))`,
-                    "--black-key-width": "clamp(24px, 8%, 40px)",
+                    "--black-key-width": "clamp(17px, 5.5%, 30px)",
                     width: "var(--black-key-width)",
                   } as CSSProperties
                 }
