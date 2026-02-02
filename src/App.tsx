@@ -24,6 +24,7 @@ type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 const APP_VERSION = "1.3.0";
 const SETTINGS_STORAGE_KEY = "readnote_studio_settings_v1";
+const DEFAULT_FEEDBACK_TEXT = "Play the note shown on the staff.";
 
 function loadSettings() {
   try {
@@ -73,7 +74,7 @@ export default function App() {
   } | null>(null);
   const [feedback, setFeedback] = useState<Feedback>({
     type: "neutral",
-    text: "Play the note shown on the staff."
+    text: DEFAULT_FEEDBACK_TEXT
   });
   const [flashState, setFlashState] = useState<"neutral" | "good" | "bad">("neutral");
   const [flashMidi, setFlashMidi] = useState<number | null>(null);
@@ -177,14 +178,14 @@ export default function App() {
   useEffect(() => {
     const next = pickNextNote(current.midi);
     setCurrent(next);
-    setFeedback({ type: "neutral", text: "Play the note shown on the staff." });
+    setFeedback({ type: "neutral", text: DEFAULT_FEEDBACK_TEXT });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeId, difficulty, keySigId]);
 
   const next = (avoidMidi?: number): void => {
     const midiToAvoid = avoidMidi ?? current.midi;
     setCurrent(pickNextNote(midiToAvoid));
-    setFeedback({ type: "neutral", text: "Play the note shown on the staff." });
+    setFeedback({ type: "neutral", text: DEFAULT_FEEDBACK_TEXT });
     setHintForced(false);
   };
 
@@ -279,6 +280,8 @@ export default function App() {
     next();
   };
 
+  const isDefaultFeedback = feedback.text === DEFAULT_FEEDBACK_TEXT;
+
   return (
     <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden pb-2">
       {/* Mobile-First HUD */}
@@ -359,7 +362,9 @@ export default function App() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 rounded-none md:rounded-xl bg-white p-3 md:p-4 flex flex-col min-h-[320px] shadow-lg shadow-zinc-900/30">
             {/* Feedback pill */}
-            <div className={`mb-1 md:mb-1.5 rounded-lg px-3 py-1.5 text-xs sm:text-sm text-center transition-all duration-200 ${
+            <div className={`mb-1 md:mb-1.5 rounded-lg px-3 py-1.5 ${
+              isDefaultFeedback ? "text-sm sm:text-lg" : "text-xs sm:text-sm"
+            } text-center transition-all duration-200 ${
               feedback.type === "good"
                 ? "bg-emerald-500 text-white ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/50 font-semibold"
                 : feedback.type === "bad"
