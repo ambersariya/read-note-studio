@@ -127,11 +127,6 @@ export function PianoKeyboard({
     };
   }, [containerWidth, minMidi, maxMidi]);
 
-  // Use calculated widths directly to avoid post-scale shrinking on resize.
-  const renderedWhiteWidth = whiteKeyWidthPx;
-  const renderedBlackWidth = blackKeyWidthPx;
-  const renderedKeyboardWidth = keyboardWidthPx;
-
   const whiteKeys = useMemo(() => pianoMidi.filter((m) => !isBlackKey(m)), [pianoMidi]);
 
   const blackKeys = useMemo(() => {
@@ -151,6 +146,22 @@ export function PianoKeyboard({
 
     return positions;
   }, [pianoMidi, whiteKeys]);
+
+  // Use calculated widths directly; if the keyboard is wider than the container, offset to visually center.
+  const renderedWhiteWidth = whiteKeyWidthPx;
+  const renderedBlackWidth = blackKeyWidthPx;
+  const renderedKeyboardWidth = keyboardWidthPx;
+
+  // Center the Middle C octave when the keyboard overflows the viewport.
+  const middleCIndex = useMemo(() => whiteKeys.indexOf(60), [whiteKeys]);
+  const middleCX = middleCIndex >= 0
+    ? middleCIndex * renderedWhiteWidth + renderedWhiteWidth / 2
+    : renderedKeyboardWidth / 2;
+  const targetCenter = containerWidth / 2;
+  const desiredShift = middleCX - targetCenter;
+  const maxShift = Math.max(renderedKeyboardWidth - containerWidth, 0);
+  const clampedShift = Math.min(Math.max(desiredShift, 0), maxShift);
+  const overflowOffset = clampedShift > 0 ? clampedShift : 0;
 
   const isInAnswerSet = (midi: number): boolean => midiChoices.includes(midi);
 
@@ -268,6 +279,7 @@ export function PianoKeyboard({
           style={
             {
               width: `${renderedKeyboardWidth}px`,
+              marginLeft: overflowOffset ? `-${overflowOffset}px` : undefined,
               "--white-key-width": `${renderedWhiteWidth}px`,
               "--black-key-width": `${renderedBlackWidth}px`,
             } as CSSProperties
