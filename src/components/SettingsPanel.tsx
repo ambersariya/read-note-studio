@@ -10,6 +10,7 @@ interface SettingsPanelProps {
   keySigId: string;
   difficulty: DifficultyLevel;
   showHints: boolean;
+  showKeyLabels: boolean;
   currentNote: Note;
   range: RangePreset;
   keySig: KeySig;
@@ -18,6 +19,7 @@ interface SettingsPanelProps {
   onKeySigChange: (keySigId: string) => void;
   onDifficultyChange: (difficulty: DifficultyLevel) => void;
   onShowHintsChange: (show: boolean) => void;
+  onShowKeyLabelsChange: (show: boolean) => void;
   noteNaming: "english" | "solfege" | "german";
   onNoteNamingChange: (n: "english" | "solfege" | "german") => void;
   autoAdvance: boolean;
@@ -33,6 +35,7 @@ export function SettingsPanel({
   keySigId,
   difficulty,
   showHints,
+  showKeyLabels,
   currentNote,
   range,
   keySig,
@@ -41,6 +44,7 @@ export function SettingsPanel({
   onKeySigChange,
   onDifficultyChange,
   onShowHintsChange,
+  onShowKeyLabelsChange,
   noteNaming,
   onNoteNamingChange,
   autoAdvance,
@@ -143,6 +147,16 @@ export function SettingsPanel({
               type="checkbox"
               checked={showHints}
               onChange={(e) => onShowHintsChange(e.target.checked)}
+              className="h-4 w-4"
+            />
+          </label>
+
+          <label className="flex items-center justify-between gap-3 mb-2">
+            <div className="text-sm text-zinc-200">Show Key Labels</div>
+            <input
+              type="checkbox"
+              checked={showKeyLabels}
+              onChange={(e) => onShowKeyLabelsChange(e.target.checked)}
               className="h-4 w-4"
             />
           </label>

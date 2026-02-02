@@ -17,6 +17,7 @@ interface PianoKeyboardProps {
   flashState?: "neutral" | "good" | "bad";
   noteNaming: NoteNaming;
   hintForced?: boolean;
+  showKeyLabels: boolean;
 }
 
 export function PianoKeyboard({
@@ -32,6 +33,7 @@ export function PianoKeyboard({
   flashMidi = null,
   flashState = "neutral",
   hintForced = false,
+  showKeyLabels,
 }: PianoKeyboardProps) {
   const pianoMidi = useMemo(() => {
     // Expand a little to start/end on white keys for nicer layout
@@ -90,16 +92,18 @@ export function PianoKeyboard({
                   key={m}
                   onClick={() => onKeyPress(m)}
                   disabled={!enabled}
-                  title={`${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}`}
+                  title={showKeyLabels ? `${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}` : undefined}
                   className={
                     "white-key flex-1 relative h-full border-x border-b border-zinc-300 bg-zinc-50 text-zinc-900 " +
                     "hover:bg-white active:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed " +
                     (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                   }
                 >
-                  <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
-                    {whiteKeyLabel(m, keySigPref, noteNaming)}
-                  </div>
+                  {showKeyLabels ? (
+                    <div className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold">
+                      {whiteKeyLabel(m, keySigPref, noteNaming)}
+                    </div>
+                  ) : null}
                   {showHighlight ? <div className="absolute inset-x-1 top-1 h-3 rounded bg-emerald-500/60" /> : null}
                 </button>
               );
@@ -120,7 +124,11 @@ export function PianoKeyboard({
                 key={midi}
                 onClick={() => onKeyPress(midi)}
                 disabled={!enabled}
-                title={`${noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming)}`}
+                title={
+                  showKeyLabels
+                    ? `${noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming)}`
+                    : undefined
+                }
                 className={
                   `black-key absolute top-3 h-32 rounded-b-md bg-zinc-950 text-zinc-100 border border-black/30 ` +
                   `hover:bg-zinc-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +

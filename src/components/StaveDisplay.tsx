@@ -2,7 +2,7 @@
 
 import type { Clef, KeySig, Note } from "../types";
 import { useRef, useEffect, useCallback } from "react";
-import Flow from "vexflow";
+import Flow, { type Tickable } from "vexflow";
 import { vexKeyForNote } from "../utils/noteUtils";
 
 const STROKE = "#0f172a"; // dark stroke for visibility on light panel
@@ -24,7 +24,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
 
     el.innerHTML = "";
 
-    const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = Flow;
+    const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental, GhostNote, StaveConnector } = Flow;
 
     // Dynamically calculate dimensions based on container
     const containerWidth = el.clientWidth;
@@ -33,10 +33,12 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     const scale = Math.max(Math.min(containerWidth / 300, 4.5), 2.0);
 
     const drawWidth = containerWidth / scale;
-    // Staff only needs ~140px of height (includes clef, key sig, note, and margins)
-    const baseStaveHeight = 140;
+    // Room for a full grand staff (treble + bass)
+    const baseStaveHeight = 260;
     const staveWidth = drawWidth - 40;
-    const staveY = 20; // Small top margin
+    const trebleY = 20; // Small top margin
+    const staffGap = 110;
+    const bassY = trebleY + staffGap;
 
     const renderer = new Renderer(el, Renderer.Backends.SVG);
     // SVG height is just what the staff needs, not the full container
@@ -46,49 +48,92 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     context.setFillStyle(STROKE);
     context.setStrokeStyle(STROKE);
 
-    const stave = new Stave(20, staveY, staveWidth);
-    stave.addClef(clef);
-    stave.addKeySignature(keySig.vex);
-    stave.setContext(context).draw();
+    const trebleStave = new Stave(20, trebleY, staveWidth);
+    trebleStave.addClef("treble");
+    trebleStave.addKeySignature(keySig.vex);
+    trebleStave.setContext(context).draw();
+
+    const bassStave = new Stave(20, bassY, staveWidth);
+    bassStave.addClef("bass");
+    bassStave.addKeySignature(keySig.vex);
+    bassStave.setContext(context).draw();
+
+    // Connect the two staves for a proper grand staff presentation
+    [
+      StaveConnector.type.BRACE,
+      StaveConnector.type.SINGLE_LEFT,
+      StaveConnector.type.SINGLE_RIGHT,
+    ].forEach((type) => {
+      const connector = new StaveConnector(trebleStave, bassStave);
+      connector.setType(type);
+      connector.setContext(context);
+      connector.draw();
+    });
+
+    const clefForMidi = (midi: number): Clef => (midi >= 60 ? "treble" : "bass");
+    const activeClef: Clef = clef;
+    const targetStave = activeClef === "treble" ? trebleStave : bassStave;
 
     const keys = [vexKeyForNote(note)];
     const staveNote = new StaveNote({
-      clef,
+      clef: activeClef,
       keys,
       duration: "q",
-    }).setStyle({ strokeStyle: STROKE, fillStyle: STROKE });
+    })
+      .setStyle({ strokeStyle: STROKE, fillStyle: STROKE })
+      .setStave(targetStave);
 
     // If our key string includes an accidental, add it explicitly so it's always shown.
     if (note.spelling.accidental === "#" || note.spelling.accidental === "b") {
       staveNote.addModifier(new Accidental(note.spelling.accidental));
     }
 
-    const tickables = [staveNote];
+    const trebleNotes: Tickable[] = [];
+    const bassNotes: Tickable[] = [];
 
     // Display ghost note (the wrong note played) in red to show error distance
     if (playedMidi !== null && playedMidi !== note.midi) {
       const wrongSpelling = { midi: playedMidi, spelling: { ...note.spelling } };
+      const wrongClef = clefForMidi(playedMidi);
+      const wrongStave = wrongClef === "treble" ? trebleStave : bassStave;
 
       // Simple ghost note - just show at the played MIDI position
       const wrongKey = vexKeyForNote(wrongSpelling);
       const wrongNote = new StaveNote({
-        clef,
+        clef: wrongClef,
         keys: [wrongKey],
         duration: "q",
-      }).setStyle({
-        strokeStyle: "rgba(248,113,113,0.7)",
-        fillStyle: "rgba(248,113,113,0.35)",
-      });
-      tickables.push(wrongNote);
+      })
+        .setStave(wrongStave)
+        .setStyle({
+          strokeStyle: "rgba(248,113,113,0.7)",
+          fillStyle: "rgba(248,113,113,0.35)",
+        });
+
+      if (wrongClef === "treble") {
+        trebleNotes.push(wrongNote);
+      } else {
+        bassNotes.push(wrongNote);
+      }
     }
 
-    const voice = new Voice({ numBeats: 1, beatValue: 4 });
-    // Exercises are measure-free: allow incomplete measures.
-    voice.setMode(Flow.Voice.Mode.SOFT);
-    voice.addTickables(tickables);
+    if (activeClef === "treble") {
+      trebleNotes.push(staveNote);
+    } else {
+      bassNotes.push(staveNote);
+    }
 
-    new Formatter().joinVoices([voice]).format([voice], 300);
-    voice.draw(context, stave);
+    const voiceTreble = new Voice({ numBeats: 1, beatValue: 4 });
+    voiceTreble.setMode(Flow.Voice.Mode.SOFT);
+    voiceTreble.addTickables(trebleNotes.length ? trebleNotes : [new GhostNote("q")]);
+
+    const voiceBass = new Voice({ numBeats: 1, beatValue: 4 });
+    voiceBass.setMode(Flow.Voice.Mode.SOFT);
+    voiceBass.addTickables(bassNotes.length ? bassNotes : [new GhostNote("q")]);
+
+    new Formatter().joinVoices([voiceTreble, voiceBass]).format([voiceTreble, voiceBass], 300);
+    voiceTreble.draw(context, trebleStave);
+    voiceBass.draw(context, bassStave);
   }, [note, clef, keySig, playedMidi]);
 
   // Render on mount and when dependencies change

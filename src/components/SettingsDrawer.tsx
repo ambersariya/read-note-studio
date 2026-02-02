@@ -13,6 +13,7 @@ interface SettingsDrawerProps {
   keySigId: string;
   difficulty: DifficultyLevel;
   showHints: boolean;
+  showKeyLabels: boolean;
   currentNote: Note;
   range: RangePreset;
   keySig: KeySig;
@@ -21,6 +22,7 @@ interface SettingsDrawerProps {
   onKeySigChange: (keySigId: string) => void;
   onDifficultyChange: (difficulty: DifficultyLevel) => void;
   onShowHintsChange: (show: boolean) => void;
+  onShowKeyLabelsChange: (show: boolean) => void;
   noteNaming: "english" | "solfege" | "german";
   onNoteNamingChange: (n: "english" | "solfege" | "german") => void;
   autoAdvance: boolean;

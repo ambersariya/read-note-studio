@@ -40,6 +40,7 @@ export default function App() {
   
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(savedSettings?.difficulty ?? "beginner");
   const [showHints, setShowHints] = useState<boolean>(savedSettings?.showHints ?? false);
+  const [showKeyLabels, setShowKeyLabels] = useState<boolean>(savedSettings?.showKeyLabels ?? false);
   const [rangeId, setRangeId] = useState<string>(savedSettings?.rangeId ?? RANGES[0].id);
   const range = useMemo(() => RANGES.find((r) => r.id === rangeId) ?? RANGES[0], [rangeId]);
 
@@ -104,12 +105,22 @@ export default function App() {
     try {
       window.localStorage.setItem(
         SETTINGS_STORAGE_KEY,
-        JSON.stringify({ rangeId, clef, keySigId, difficulty, showHints, noteNaming, autoAdvance, visualHint })
+        JSON.stringify({
+          rangeId,
+          clef,
+          keySigId,
+          difficulty,
+          showHints,
+          showKeyLabels,
+          noteNaming,
+          autoAdvance,
+          visualHint,
+        })
       );
     } catch {
       // ignore
     }
-  }, [rangeId, clef, keySigId, difficulty, showHints, noteNaming, autoAdvance, visualHint]);
+  }, [rangeId, clef, keySigId, difficulty, showHints, showKeyLabels, noteNaming, autoAdvance, visualHint]);
 
   // Clear timers on unmount
   useEffect(() => {
@@ -328,13 +339,15 @@ export default function App() {
             onRangeChange={setRangeId}
             onClefChange={setClef}
             onKeySigChange={setKeySigId}
-            onDifficultyChange={setDifficulty}
-            onShowHintsChange={setShowHints}
-            noteNaming={noteNaming}
-            onNoteNamingChange={setNoteNaming}
-            autoAdvance={autoAdvance}
-            onAutoAdvanceChange={setAutoAdvance}
-            visualHint={visualHint}
+          onDifficultyChange={setDifficulty}
+          onShowHintsChange={setShowHints}
+          showKeyLabels={showKeyLabels}
+          onShowKeyLabelsChange={setShowKeyLabels}
+          noteNaming={noteNaming}
+          onNoteNamingChange={setNoteNaming}
+          autoAdvance={autoAdvance}
+          onAutoAdvanceChange={setAutoAdvance}
+          visualHint={visualHint}
             onVisualHintChange={setVisualHint}
           />
         </div>
@@ -449,6 +462,7 @@ export default function App() {
             midiChoices={midiChoices}
             keySigPref={keySig.pref}
             showHints={showHints}
+            showKeyLabels={showKeyLabels}
             noteNaming={noteNaming}
             hintForced={hintForced}
             flashMidi={flashMidi}
