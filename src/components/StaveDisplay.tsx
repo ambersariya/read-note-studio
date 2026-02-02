@@ -28,13 +28,16 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
 
     // Dynamically calculate dimensions based on container
     const containerWidth = el.clientWidth;
+    const containerHeight = el.clientHeight || 0;
 
     // Calculate scale based on container width (fill more space but stay within caps)
-    const scale = Math.max(Math.min(containerWidth / 520, 1.9), 1.2);
+    const baseStaveHeight = 175;
+    const scaleFromWidth = containerWidth / 520;
+    const scaleFromHeight = containerHeight ? containerHeight / (baseStaveHeight + 20) : 3;
+    const scale = Math.max(Math.min(Math.min(scaleFromWidth, scaleFromHeight), 2), 1.1);
 
     const drawWidth = containerWidth / scale;
     // Room for a full grand staff (treble + bass) with tight footprint
-    const baseStaveHeight = 175;
     const staveWidth = drawWidth - 32;
     const trebleY = 12; // Small top margin
     const staffGap = 78;
@@ -42,7 +45,8 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
 
     const renderer = new Renderer(el, Renderer.Backends.SVG);
     // SVG height is just what the staff needs, not the full container
-    renderer.resize(containerWidth, baseStaveHeight * scale);
+    const scaledHeight = baseStaveHeight * scale + 12;
+    renderer.resize(containerWidth, containerHeight ? Math.max(containerHeight, scaledHeight) : scaledHeight);
     const context = renderer.getContext();
     context.scale(scale, scale);
     context.setFillStyle(STROKE);
@@ -167,8 +171,8 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
   return (
     <div className={`h-full rounded-lg bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`}>
       <div className="w-full h-full flex items-center justify-center">
-        <div className="w-full flex items-center justify-center px-4">
-          <div ref={containerRef} className="w-full max-w-md" style={{ transformOrigin: "center" }} />
+        <div className="w-full h-full flex items-center justify-center px-2 sm:px-4">
+          <div ref={containerRef} className="w-full h-full" style={{ transformOrigin: "center" }} />
         </div>
       </div>
     </div>
