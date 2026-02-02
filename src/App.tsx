@@ -370,7 +370,7 @@ export default function App() {
             </div>
 
             {/* Musical Staff */}
-            <div className="flex-1 min-h-0 animate-slide-in">
+            <div className="flex-1 min-h-0 max-h-[320px] md:max-h-[360px] animate-slide-in">
               <StaveDisplay
                 note={current}
                 clef={clef}
