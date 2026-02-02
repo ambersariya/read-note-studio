@@ -90,10 +90,29 @@ export default function App() {
     [range, includeAccidentals]
   );
 
+  const lastRangeByClef = useRef<{ treble: string; bass: string }>({
+    treble: RANGES.find((r) => r.clef === "treble")?.id ?? RANGES[0].id,
+    bass: RANGES.find((r) => r.clef === "bass")?.id ?? RANGES[RANGES.length - 1].id,
+  });
+
   // Keep clef in sync with range preset
   useEffect(() => {
     setClef(range.clef);
   }, [range.clef]);
+
+  // Remember last chosen range per clef; update on range change.
+  useEffect(() => {
+    lastRangeByClef.current[range.clef] = range.id;
+  }, [range]);
+
+  const handleClefChange = (nextClef: Clef) => {
+    setClef(nextClef);
+    const preferred = lastRangeByClef.current[nextClef];
+    const fallback = RANGES.find((r) => r.clef === nextClef)?.id;
+    if (preferred || fallback) {
+      setRangeId(preferred ?? fallback ?? rangeId);
+    }
+  };
 
   // Persist stats
   useEffect(() => {
@@ -376,7 +395,7 @@ export default function App() {
               {(["treble", "bass"] as const).map((c) => (
                 <button
                   key={c}
-                  onClick={() => setClef(c)}
+                  onClick={() => handleClefChange(c)}
                   className={`px-3 py-1 text-xs font-semibold transition ${
                     clef === c ? "bg-white/15 text-white" : "bg-transparent text-zinc-200 hover:bg-white/10"
                   }`}

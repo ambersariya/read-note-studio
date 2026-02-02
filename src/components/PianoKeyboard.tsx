@@ -147,21 +147,53 @@ export function PianoKeyboard({
     return positions;
   }, [pianoMidi, whiteKeys]);
 
+  // Center pivot prefers Middle C if within range; otherwise center of current answer set.
+  const pivotMidi = useMemo(() => {
+    if (midiChoices.includes(60)) return 60;
+    return midiChoices[Math.floor(midiChoices.length / 2)] ?? 60;
+  }, [midiChoices]);
+
+  const pivotWhiteMidi = useMemo(() => {
+    if (!whiteKeys.length) return pivotMidi;
+    return whiteKeys.reduce((best, midi) => {
+      const bestDiff = Math.abs(best - pivotMidi);
+      const diff = Math.abs(midi - pivotMidi);
+      return diff < bestDiff ? midi : best;
+    }, whiteKeys[0]);
+  }, [whiteKeys, pivotMidi]);
+
   // Use calculated widths directly; if the keyboard is wider than the container, offset to visually center.
   const renderedWhiteWidth = whiteKeyWidthPx;
   const renderedBlackWidth = blackKeyWidthPx;
   const renderedKeyboardWidth = keyboardWidthPx;
 
-  // Center the Middle C octave when the keyboard overflows the viewport.
-  const middleCIndex = useMemo(() => whiteKeys.indexOf(60), [whiteKeys]);
-  const middleCX = middleCIndex >= 0
-    ? middleCIndex * renderedWhiteWidth + renderedWhiteWidth / 2
+  const pivotIndex = whiteKeys.indexOf(pivotWhiteMidi);
+  const pivotX = pivotIndex >= 0
+    ? pivotIndex * renderedWhiteWidth + renderedWhiteWidth / 2
     : renderedKeyboardWidth / 2;
   const targetCenter = containerWidth / 2;
-  const desiredShift = middleCX - targetCenter;
+  const desiredShift = pivotX - targetCenter;
   const maxShift = Math.max(renderedKeyboardWidth - containerWidth, 0);
   const clampedShift = Math.min(Math.max(desiredShift, 0), maxShift);
   const overflowOffset = clampedShift > 0 ? clampedShift : 0;
+
+  const activeStartIndex = useMemo(
+    () => whiteKeys.findIndex((m) => m >= minMidi),
+    [whiteKeys, minMidi]
+  );
+  const activeEndIndex = useMemo(() => {
+    for (let i = whiteKeys.length - 1; i >= 0; i--) {
+      if (whiteKeys[i] <= maxMidi) return i;
+    }
+    return -1;
+  }, [whiteKeys, maxMidi]);
+  const activeOverlay =
+    activeStartIndex >= 0 && activeEndIndex >= activeStartIndex
+      ? {
+          left: activeStartIndex * renderedWhiteWidth,
+          width: (activeEndIndex - activeStartIndex + 1) * renderedWhiteWidth,
+        }
+      : null;
 
   const isInAnswerSet = (midi: number): boolean => midiChoices.includes(midi);
 
@@ -287,6 +319,13 @@ export function PianoKeyboard({
         >
           <div className="h-2 bg-rose-500/90 rounded-t-sm shrink-0" aria-hidden />
           <div className="relative flex pb-safe flex-1 justify-center" role="group" aria-label="Piano keys">
+            {activeOverlay ? (
+              <div
+                className="absolute inset-y-0 rounded-md pointer-events-none bg-emerald-200/12 border border-emerald-400/25"
+                style={{ left: `${activeOverlay.left}px`, width: `${activeOverlay.width}px` }}
+                aria-hidden
+              />
+            ) : null}
             <div className="flex">{whiteKeys.map(renderWhiteKey)}</div>
             {blackKeys.map(({ midi, cssIndex }) => renderBlackKey(midi, cssIndex))}
           </div>
