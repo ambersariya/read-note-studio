@@ -1,7 +1,7 @@
 "use client";
 
 import type { AccidentalPref, Note } from "../types";
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, type CSSProperties, useEffect, useState } from "react";
 import { isBlackKey, whiteKeyLabel, midiToOctave, noteLabelWithNaming, spellMidi, type NoteNaming } from "../utils/noteUtils";
 
 interface PianoKeyboardProps {
@@ -35,16 +35,27 @@ export function PianoKeyboard({
   hintForced = false,
   showKeyLabels,
 }: PianoKeyboardProps) {
+  // Detect desktop/tablet to decide how much context to show (keep mobile compact)
+  const [isWide, setIsWide] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsWide(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   const pianoMidi = useMemo(() => {
-    // Expand a little to start/end on white keys for nicer layout
-    let min = minMidi;
+    // On desktop/tablet, show an extra octave of context on each side (but not full 88 keys)
+    const padding = isWide ? 12 : 0;
+    let min = Math.max(0, minMidi - padding);
     while (isBlackKey(min) && min > 0) min--;
-    let max = maxMidi;
+    let max = Math.min(127, maxMidi + padding);
     while (isBlackKey(max) && max < 127) max++;
     const out: number[] = [];
     for (let m = min; m <= max; m++) out.push(m);
     return out;
-  }, [minMidi, maxMidi]);
+  }, [minMidi, maxMidi, isWide]);
 
   const whiteKeys = useMemo(() => pianoMidi.filter((m) => !isBlackKey(m)), [pianoMidi]);
 
@@ -95,7 +106,7 @@ export function PianoKeyboard({
                   title={showKeyLabels ? `${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}` : undefined}
                   className={
                     "white-key flex-1 relative h-full border-x border-b border-zinc-300 bg-zinc-50 text-zinc-900 " +
-                    "hover:bg-white active:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed " +
+                    "hover:bg-white active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed " +
                     (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                   }
                 >
@@ -130,8 +141,8 @@ export function PianoKeyboard({
                     : undefined
                 }
                 className={
-                  `black-key absolute top-3 h-32 rounded-b-md bg-zinc-950 text-zinc-100 border border-black/30 ` +
-                  `hover:bg-zinc-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
+                  `black-key absolute top-3 h-32 rounded-b-md bg-zinc-950 text-zinc-100 ` +
+                  `border border-black/30 hover:bg-zinc-900 active:bg-black disabled:opacity-30 disabled:cursor-not-allowed ` +
                   `pointer-events-auto z-10 ` +
                   (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                 }
