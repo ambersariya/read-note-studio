@@ -31,18 +31,16 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({
   rangeId,
-  clef,
+  clef: _clef,
   keySigId,
-  difficulty,
+  difficulty: _difficulty,
   showHints,
   showKeyLabels,
   currentNote,
   range,
   keySig,
   onRangeChange,
-  onClefChange,
   onKeySigChange,
-  onDifficultyChange,
   onShowHintsChange,
   onShowKeyLabelsChange,
   noteNaming,
@@ -62,29 +60,8 @@ export function SettingsPanel({
       {!inDrawer && <h2 className="text-base font-semibold">Settings</h2>}
 
       <div className={`${inDrawer ? '' : 'mt-4'} flex-1 space-y-3 ${inDrawer ? '' : 'overflow-y-auto pr-1 no-scrollbar lg:pr-2'}`}>
-        {/* Clef - Moved to top */}
-        <div className="block">
-          <div className="mb-2 text-sm font-semibold text-zinc-200">Clef</div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onClefChange("treble")}
-              className={
-                "flex-1 rounded-md px-3 py-2 text-sm font-semibold border transition " +
-                (clef === "treble" ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10")
-              }
-            >
-              Treble
-            </button>
-            <button
-              onClick={() => onClefChange("bass")}
-              className={
-                "flex-1 rounded-md px-3 py-2 text-sm font-semibold border transition " +
-                (clef === "bass" ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10")
-              }
-            >
-              Bass
-            </button>
-          </div>
+        <div className="block rounded-md bg-zinc-800/60 border border-white/10 px-3 py-2 text-xs text-zinc-300">
+          Clef and Difficulty now live in the top ribbon for quick access.
         </div>
 
         {/* Level/Range - Compact dropdown style */}
@@ -101,40 +78,6 @@ export function SettingsPanel({
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Difficulty Level - Compact segmented control */}
-        <div className="block">
-          <div className="mb-2 text-sm font-semibold text-zinc-200">Difficulty</div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onDifficultyChange("beginner")}
-              className={
-                "flex-1 rounded-md px-2 py-2 text-xs font-semibold border transition " +
-                (difficulty === "beginner" ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10")
-              }
-            >
-              Beginner
-            </button>
-            <button
-              onClick={() => onDifficultyChange("intermediate")}
-              className={
-                "flex-1 rounded-md px-2 py-2 text-xs font-semibold border transition " +
-                (difficulty === "intermediate" ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10")
-              }
-            >
-              Inter
-            </button>
-            <button
-              onClick={() => onDifficultyChange("advanced")}
-              className={
-                "flex-1 rounded-md px-2 py-2 text-xs font-semibold border transition " +
-                (difficulty === "advanced" ? "bg-white/15 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10")
-              }
-            >
-              Advanced
-            </button>
-          </div>
         </div>
 
         {/* Assistance Section */}

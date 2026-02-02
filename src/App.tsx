@@ -285,74 +285,126 @@ export default function App() {
   return (
     <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden pb-2">
       {/* Mobile-First HUD */}
-      <div className="relative shrink-0 flex items-center justify-between gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-2.5 border-b border-zinc-800">
-        {/* Left: Title (hidden on mobile) */}
-        <div className="hidden md:block">
-          <h1 className="text-lg font-semibold tracking-tight lg:text-xl">
-            ReadNote Studio
-            <span className="ml-2 text-sm font-normal text-zinc-400">v{APP_VERSION}</span>
-          </h1>
+      <div className="relative shrink-0 flex flex-col gap-2 bg-zinc-900/80 backdrop-blur-md px-3 py-2.5 border-b border-zinc-800">
+        <div className="flex items-center gap-2">
+          {/* Left: Title (hidden on mobile) */}
+          <div className="hidden md:block">
+            <h1 className="text-lg font-semibold tracking-tight lg:text-xl">
+              ReadNote Studio
+              <span className="ml-2 text-sm font-normal text-zinc-400">v{APP_VERSION}</span>
+            </h1>
+          </div>
+
+          {/* Center: Stats */}
+          <div className="flex-1 flex items-center justify-center gap-4 md:gap-6 px-2 py-1.5 rounded-md">
+            <div className="text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1">
+                NPM
+                <button
+                  type="button"
+                  className="text-zinc-400 hover:text-zinc-200"
+                  title="Notes Per Minute: average notes you play correctly per minute since your first correct answer this session."
+                  aria-label="What is NPM?"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-11a1 1 0 100 2 1 1 0 000-2zm-1 3a1 1 0 000 2h1a1 1 0 011 1v1a1 1 0 11-2 0v-.117A1.001 1.001 0 018 12a2 2 0 014 0v.5a1.5 1.5 0 11-3 0 1 1 0 10-2 0A3.5 3.5 0 0012.5 16h.125a1 1 0 000-2H12.5a1.5 1.5 0 110-3h.125a1 1 0 000-2H12a3 3 0 00-3 3z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </span>
+              <span className="font-semibold text-emerald-400 text-lg md:text-xl">{notesPerMinute.toFixed(1)}</span>
+            </div>
+            <div className="text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap">
+              ACC <span className="font-semibold text-blue-400 text-lg md:text-xl">{attempts === 0 ? 0 : Math.round((score / attempts) * 100)}%</span>
+            </div>
+            {/* Streak: Hidden on mobile, shown on md+ */}
+            <div className="hidden md:block text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap">
+              STREAK <span className="font-semibold text-amber-400 text-lg md:text-xl">{streak}</span>
+            </div>
+          </div>
+
+          {/* Right: Action Icons */}
+          <div className="flex items-center gap-1.5">
+            <MemoryAidsModal />
+            <button
+              onClick={() => setFeedback({ type: "neutral", text: `The note is: ${current.spelling.letter}${current.spelling.accidental}` })}
+              className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-white/5 transition-colors touch-manipulation"
+              title="Reveal answer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <button
+              onClick={handleResetStats}
+              className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-rose-500/20 transition-colors touch-manipulation"
+              title="Reset stats"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <SettingsDrawer
+              rangeId={rangeId}
+              clef={clef}
+              keySigId={keySigId}
+              difficulty={difficulty}
+              showHints={showHints}
+              currentNote={current}
+              range={range}
+              keySig={keySig}
+              onRangeChange={setRangeId}
+              onClefChange={setClef}
+              onKeySigChange={setKeySigId}
+              onDifficultyChange={setDifficulty}
+              onShowHintsChange={setShowHints}
+              showKeyLabels={showKeyLabels}
+              onShowKeyLabelsChange={setShowKeyLabels}
+              noteNaming={noteNaming}
+              onNoteNamingChange={setNoteNaming}
+              autoAdvance={autoAdvance}
+              onAutoAdvanceChange={setAutoAdvance}
+              visualHint={visualHint}
+              onVisualHintChange={setVisualHint}
+            />
+          </div>
         </div>
 
-        {/* Center: Stats (locked to center) */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-5 md:gap-7 px-3 py-1.5 rounded-md">
-          <div className="text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap">
-            NPM <span className="font-semibold text-emerald-400 text-lg md:text-xl">{notesPerMinute.toFixed(1)}</span>
+        {/* Control ribbon */}
+        <div className="flex flex-wrap gap-2 items-center justify-between md:justify-start">
+          <div className="flex items-center gap-2 bg-zinc-800/70 border border-zinc-700 rounded-lg px-2 py-1 text-sm text-zinc-100">
+            <span className="text-xs uppercase tracking-wide text-zinc-400">Clef</span>
+            <div className="flex overflow-hidden rounded-md border border-zinc-700">
+              {(["treble", "bass"] as const).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setClef(c)}
+                  className={`px-3 py-1 text-xs font-semibold transition ${
+                    clef === c ? "bg-white/15 text-white" : "bg-transparent text-zinc-200 hover:bg-white/10"
+                  }`}
+                >
+                  {c === "treble" ? "Treble" : "Bass"}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap">
-            ACC <span className="font-semibold text-blue-400 text-lg md:text-xl">{attempts === 0 ? 0 : Math.round((score / attempts) * 100)}%</span>
-          </div>
-          {/* Streak: Hidden on mobile, shown on md+ */}
-          <div className="hidden md:block text-sm md:text-base font-mono text-zinc-200 whitespace-nowrap">
-            STREAK <span className="font-semibold text-amber-400 text-lg md:text-xl">{streak}</span>
-          </div>
-        </div>
 
-        {/* Right: Action Icons */}
-        <div className="flex items-center gap-1.5">
-          <MemoryAidsModal />
-          <button
-            onClick={() => setFeedback({ type: "neutral", text: `The note is: ${current.spelling.letter}${current.spelling.accidental}` })}
-            className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-white/5 transition-colors touch-manipulation"
-            title="Reveal answer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <button
-            onClick={handleResetStats}
-            className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-rose-500/20 transition-colors touch-manipulation"
-            title="Reset stats"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
-          </button>
-          <SettingsDrawer
-            rangeId={rangeId}
-            clef={clef}
-            keySigId={keySigId}
-            difficulty={difficulty}
-            showHints={showHints}
-            currentNote={current}
-            range={range}
-            keySig={keySig}
-            onRangeChange={setRangeId}
-            onClefChange={setClef}
-            onKeySigChange={setKeySigId}
-          onDifficultyChange={setDifficulty}
-          onShowHintsChange={setShowHints}
-          showKeyLabels={showKeyLabels}
-          onShowKeyLabelsChange={setShowKeyLabels}
-          noteNaming={noteNaming}
-          onNoteNamingChange={setNoteNaming}
-          autoAdvance={autoAdvance}
-          onAutoAdvanceChange={setAutoAdvance}
-          visualHint={visualHint}
-            onVisualHintChange={setVisualHint}
-          />
+          <div className="flex items-center gap-2 bg-zinc-800/70 border border-zinc-700 rounded-lg px-2 py-1 text-sm text-zinc-100 overflow-x-auto scrollbar-hide">
+            <span className="text-xs uppercase tracking-wide text-zinc-400">Difficulty</span>
+            <div className="flex divide-x divide-zinc-700 rounded-md border border-zinc-700 overflow-hidden">
+              {(["beginner", "intermediate", "advanced"] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => setDifficulty(lvl)}
+                  className={`px-3 py-1 text-xs font-semibold transition ${
+                    difficulty === lvl ? "bg-emerald-500/20 text-emerald-100" : "bg-transparent text-zinc-200 hover:bg-white/10"
+                  }`}
+                >
+                  {lvl === "beginner" ? "Beginner" : lvl === "intermediate" ? "Intermediate" : "Advanced"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

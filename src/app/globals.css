@@ -26,6 +26,10 @@ body {
   animation: shake 340ms ease-in-out;
 }
 
+.animate-shake-soft {
+  animation: shake-soft 260ms ease-in-out;
+}
+
 .animate-slide-in {
   animation: slide-in 280ms ease-out;
 }
@@ -40,6 +44,13 @@ body {
   40% { transform: translateX(6px); }
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
+}
+
+@keyframes shake-soft {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
 }
 
 @keyframes slide-in {
@@ -92,11 +103,22 @@ body {
 .piano-keyboard .white-key {
   width: var(--white-key-width);
   min-width: var(--white-key-width);
+  position: relative;
 }
 
 .piano-keyboard .black-key {
   width: var(--black-key-width);
   left: calc((var(--key-index) + 1) * var(--white-key-width) - var(--black-offset));
+}
+
+/* Slightly larger invisible hitboxes for touch comfort */
+.piano-keyboard .white-key::after,
+.piano-keyboard .black-key::after {
+  content: "";
+  position: absolute;
+  inset: -6px -4px -2px -4px;
+  pointer-events: auto;
+  background: transparent;
 }
 
 /* Short visual flashes for incorrect answers */

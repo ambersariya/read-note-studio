@@ -6,6 +6,7 @@ let Tone: typeof import("tone") | null = null;
 let synth: import("tone").Sampler | null = null;
 let isInitializing = false;
 let samplesLoaded = false;
+let thudSynth: import("tone").MembraneSynth | null = null;
 
 async function initializeTone(): Promise<void> {
   // Skip initialization during SSR
@@ -111,4 +112,22 @@ export function playMidi(midi: number): void {
   } catch (error) {
     console.error("Error playing MIDI note:", error);
   }
+}
+
+function getThudSynth(): typeof thudSynth {
+  if (!Tone) return null;
+  if (!thudSynth) {
+    thudSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.01,
+      octaves: 2,
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.12 },
+    }).connect(Tone.Destination);
+  }
+  return thudSynth;
+}
+
+export async function playThud(): Promise<void> {
+  if (!Tone) return;
+  const synthInstance = getThudSynth();
+  synthInstance?.triggerAttackRelease("C2", "16n", undefined, 0.16);
 }
