@@ -1,8 +1,8 @@
 'use client';
 
-import type { Clef, KeySig, Note } from "../types";
-import { useRef, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import Flow, { type Tickable } from "vexflow";
+import type { Clef, KeySig, Note } from "../types";
 import { vexKeyForNote } from "../utils/noteUtils";
 
 const STROKE = "#0f172a"; // dark stroke for visibility on light panel
@@ -140,12 +140,14 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     voiceBass.draw(context, bassStave);
   }, [note, clef, keySig, playedMidi]);
 
-  // Render on mount and when dependencies change
   useEffect(() => {
     renderStave();
+    return () => {
+      const el = containerRef.current;
+      if (el) el.innerHTML = "";
+    };
   }, [renderStave]);
 
-  // Add ResizeObserver to handle container size changes
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -168,13 +170,23 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
         ? "animate-pop-success border-2 border-emerald-400"
         : "";
 
+  const describeNote = (n: Note) => `${n.spelling.letter}${n.spelling.accidental || ""} (${n.midi})`;
+  const ariaLabel = `Grand staff showing ${describeNote(note)} in ${clef} clef, key of ${keySig.label}.`;
+
   return (
-    <div className={`h-full rounded-lg bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`}>
+    <section className={`h-full rounded-lg bg-white p-2 overflow-hidden transition-all duration-150 ${flashClass}`} aria-label="Staff display">
       <div className="w-full h-full flex items-center justify-center">
-        <div className="w-full h-full flex items-center justify-center px-2 sm:px-4">
-          <div ref={containerRef} className="w-full h-full" style={{ transformOrigin: "center" }} />
-        </div>
+        <figure className="w-full h-full flex items-center justify-center px-2 sm:px-4 m-0">
+          <div
+            ref={containerRef}
+            className="w-full h-full"
+            style={{ transformOrigin: "center" }}
+            role="img"
+            aria-label={ariaLabel}
+          />
+          <figcaption className="sr-only">{ariaLabel}</figcaption>
+        </figure>
       </div>
-    </div>
+    </section>
   );
 }
