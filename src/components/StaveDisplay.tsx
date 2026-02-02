@@ -30,11 +30,11 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     const containerWidth = el.clientWidth;
 
     // Calculate scale based on container width (slightly zoomed out to fit grand staff comfortably)
-    const scale = Math.max(Math.min(containerWidth / 360, 3.5), 1.6);
+    const scale = Math.max(Math.min(containerWidth / 420, 3.0), 1.3);
 
     const drawWidth = containerWidth / scale;
     // Room for a full grand staff (treble + bass)
-    const baseStaveHeight = 240;
+    const baseStaveHeight = 210;
     const staveWidth = drawWidth - 40;
     const trebleY = 20; // Small top margin
     const staffGap = 110;
