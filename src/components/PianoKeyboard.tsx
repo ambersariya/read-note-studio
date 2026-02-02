@@ -83,7 +83,8 @@ export function PianoKeyboard({
 
   const whiteButtonClass =
     "white-key flex-1 relative h-full border-x border-b border-zinc-300 bg-zinc-50 text-zinc-900 " +
-    "hover:bg-white active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation";
+    "hover:bg-white active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation " +
+    "rounded-b-lg overflow-hidden";
 
   const blackButtonBaseClass =
     "black-key absolute top-3 h-44 rounded-b-md bg-black text-zinc-100 border border-zinc-800 " +
@@ -152,10 +153,12 @@ export function PianoKeyboard({
   return (
     <section className="h-full select-none" aria-label="Piano keyboard">
       <div className="relative overflow-x-auto overflow-y-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[320px] min-h-[220px]">
-        <div className="piano-keyboard relative flex pb-safe h-full min-w-full" role="group" aria-label="Piano keys">
-          <div className="flex flex-1">{whiteKeys.map(renderWhiteKey)}</div>
-
-          {blackKeys.map(({ midi, cssIndex }) => renderBlackKey(midi, cssIndex))}
+        <div className="piano-keyboard relative h-full min-w-full flex flex-col">
+          <div className="h-2 bg-rose-500/90 rounded-t-sm shrink-0" aria-hidden />
+          <div className="relative flex pb-safe flex-1" role="group" aria-label="Piano keys">
+            <div className="flex flex-1">{whiteKeys.map(renderWhiteKey)}</div>
+            {blackKeys.map(({ midi, cssIndex }) => renderBlackKey(midi, cssIndex))}
+          </div>
         </div>
       </div>
     </section>
