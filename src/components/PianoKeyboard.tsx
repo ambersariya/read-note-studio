@@ -178,7 +178,7 @@ export function PianoKeyboard({
     "hover:bg-zinc-900 active:bg-black disabled:opacity-40 disabled:bg-black disabled:text-zinc-300 " +
     "disabled:border-zinc-800/80 disabled:cursor-not-allowed pointer-events-auto z-10 touch-manipulation";
 
-  const labelOpacity = showKeyLabels ? 1 : idleLevel === 2 ? 1 : idleLevel === 1 ? 0.45 : 0;
+  const labelOpacity = showKeyLabels ? (idleLevel === 2 ? 1 : idleLevel === 1 ? 0.45 : 0.85) : 0;
 
   const handlePress = async (midi: number, enabled: boolean) => {
     registerInteraction();
@@ -199,21 +199,22 @@ export function PianoKeyboard({
     const showMiddleC = midi === 60;
     const isBlocked = blockedMidi === midi;
 
+    const keyAriaLabel = showKeyLabels ? `${label}${midiToOctave(midi)}` : midi === 60 ? "Middle C anchor" : "Piano key";
     return (
       <button
         key={midi}
         type="button"
         onClick={() => void handlePress(midi, enabled)}
         aria-pressed={midi === currentNote.midi}
-        aria-label={`${label}${midiToOctave(midi)}`}
-        title={showKeyLabels ? `${label}${midiToOctave(midi)}` : undefined}
+        aria-label={keyAriaLabel}
+        title={showKeyLabels ? keyAriaLabel : undefined}
         aria-disabled={!enabled}
         tabIndex={enabled ? 0 : -1}
         className={`${whiteButtonClass} ${flashBad ? "key-flash-bad border-2 border-rose-400" : ""} ${
-          !enabled ? "opacity-50 cursor-not-allowed" : ""
+          !enabled ? "opacity-35 filter saturate-50 cursor-not-allowed" : ""
         } ${isBlocked ? "animate-shake-soft ring-1 ring-zinc-500/40" : ""}`}
       >
-        {labelOpacity > 0 ? (
+        {showKeyLabels ? (
           <div
             className="absolute bottom-2 left-0 right-0 text-center text-xs font-semibold text-zinc-900"
             aria-hidden
@@ -235,18 +236,19 @@ export function PianoKeyboard({
     const label = noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming);
     const isBlocked = blockedMidi === midi;
 
+    const keyAriaLabel = showKeyLabels ? label : midi === 60 ? "Middle C anchor" : "Black piano key";
     return (
       <button
         key={midi}
         type="button"
         onClick={() => void handlePress(midi, enabled)}
         aria-pressed={midi === currentNote.midi}
-        aria-label={label}
+        aria-label={keyAriaLabel}
         title={showKeyLabels ? label : undefined}
         aria-disabled={!enabled}
         tabIndex={enabled ? 0 : -1}
         className={`${blackButtonBaseClass} ${flashBad ? "key-flash-bad border-2 border-rose-400" : ""} ${
-          !enabled ? "opacity-60 cursor-not-allowed" : ""
+          !enabled ? "opacity-45 filter saturate-50 cursor-not-allowed" : ""
         } ${isBlocked ? "animate-shake-soft ring-1 ring-zinc-500/40" : ""}`}
         style={
           {
@@ -256,7 +258,7 @@ export function PianoKeyboard({
           } as CSSProperties
         }
       >
-        {labelOpacity > 0 ? (
+        {showKeyLabels ? (
           <div
             className="absolute -bottom-1 left-0 right-0 text-center text-[10px] font-semibold text-white"
             aria-hidden
@@ -273,7 +275,7 @@ export function PianoKeyboard({
     <section className="h-full select-none" aria-label="Piano keyboard">
       <div
         ref={containerRef}
-        className="relative overflow-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[320px] min-h-[220px]"
+        className="relative overflow-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[340px] min-h-[260px] sm:min-h-[240px] md:min-h-[220px]"
       >
         <div
           className="piano-keyboard relative h-full flex flex-col mx-auto"

@@ -134,7 +134,7 @@ export function SettingsPanel({
             className="w-full rounded-md bg-white/5 px-3 py-2 text-sm font-semibold text-zinc-200 border border-white/10 hover:bg-white/10 transition cursor-pointer"
           >
             <option value="english" className="bg-zinc-900">Scientific (C, D, E)</option>
-            <option value="solfege" className="bg-zinc-900">Solfège (Do, Re, Mi)</option>
+            <option value="solfege" className="bg-zinc-900">Solfege (Do, Re, Mi)</option>
             <option value="german" className="bg-zinc-900">German (H for B)</option>
           </select>
         </div>

@@ -6,7 +6,6 @@ import { KEY_SIGS, RANGES } from "./utils/constants";
 import {
   buildMidiRange,
   loadStats,
-  noteLabelWithNaming,
   saveStats,
   spellMidi,
   updateStats,
@@ -24,7 +23,7 @@ type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
 const APP_VERSION = "1.3.0";
 const SETTINGS_STORAGE_KEY = "readnote_studio_settings_v1";
-const DEFAULT_FEEDBACK_TEXT = "Play the note shown on the staff.";
+const DEFAULT_FEEDBACK_TEXT = "Play the note you see on the staff — no text hints.";
 
 function loadSettings() {
   try {
@@ -206,7 +205,7 @@ export default function App() {
     if (correct) {
       setScore((v) => v + 1);
       setStreak((v) => v + 1);
-      setFeedback({ type: "good", text: `✅ Correct: ${noteLabelWithNaming(current, noteNaming)}` });
+      setFeedback({ type: "good", text: "✅ Correct! Keep tracking the staff." });
       setFlashState("good");
       setFlashMidi(null);
 
@@ -241,10 +240,9 @@ export default function App() {
       }
     } else {
       setStreak(0);
-      const your = { midi: answerMidi, spelling: spellMidi(answerMidi, keySig.pref) };
-      setFeedback({ 
-        type: "bad", 
-        text: `❌ Nope — it was ${noteLabelWithNaming(current, noteNaming)} (you played ${noteLabelWithNaming(your, noteNaming)})` 
+      setFeedback({
+        type: "bad",
+        text: "❌ Not quite. Re-read the staff and try again.",
       });
       setFlashState("bad");
       setFlashMidi(answerMidi);
@@ -326,7 +324,7 @@ export default function App() {
           <div className="flex items-center gap-1.5">
             <MemoryAidsModal />
             <button
-              onClick={() => setFeedback({ type: "neutral", text: `The note is: ${current.spelling.letter}${current.spelling.accidental}` })}
+              onClick={() => setFeedback({ type: "neutral", text: "Hard mode: the answer lives on the staff." })}
               className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-white/5 transition-colors touch-manipulation"
               title="Reveal answer"
             >
