@@ -29,15 +29,15 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     // Dynamically calculate dimensions based on container
     const containerWidth = el.clientWidth;
 
-    // Calculate scale based on container width (smaller to keep full staff visible above keyboard)
-    const scale = Math.max(Math.min(containerWidth / 520, 1.8), 1.15);
+    // Calculate scale based on container width (smaller so the staff takes less vertical space on tablets)
+    const scale = Math.max(Math.min(containerWidth / 580, 1.6), 1.05);
 
     const drawWidth = containerWidth / scale;
-    // Room for a full grand staff (treble + bass)
-    const baseStaveHeight = 200;
+    // Room for a full grand staff (treble + bass) with tighter vertical footprint
+    const baseStaveHeight = 180;
     const staveWidth = drawWidth - 40;
-    const trebleY = 16; // Small top margin
-    const staffGap = 90;
+    const trebleY = 14; // Small top margin
+    const staffGap = 80;
     const bassY = trebleY + staffGap;
 
     const renderer = new Renderer(el, Renderer.Backends.SVG);
