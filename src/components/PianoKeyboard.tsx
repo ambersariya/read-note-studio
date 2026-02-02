@@ -87,7 +87,7 @@ export function PianoKeyboard({
   const isInAnswerSet = (midi: number): boolean => midiChoices.includes(midi);
 
   return (
-    <div className="h-full">
+    <div className="h-full select-none">
       {/* Piano Container - scrollable on mobile, flexes to parent height */}
       <div className="relative overflow-x-auto overflow-y-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-3 md:border md:border-zinc-800 h-full max-h-[320px] min-h-[220px]">
         <div className="piano-keyboard relative flex pb-safe h-full min-w-full">
@@ -106,7 +106,7 @@ export function PianoKeyboard({
                   title={showKeyLabels ? `${whiteKeyLabel(m, keySigPref, noteNaming)}${midiToOctave(m)}` : undefined}
                   className={
                     "white-key flex-1 relative h-full border-x border-b border-zinc-300 bg-zinc-50 text-zinc-900 " +
-                    "hover:bg-white active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed " +
+                    "hover:bg-white active:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation " +
                     (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                   }
                 >
@@ -141,10 +141,10 @@ export function PianoKeyboard({
                     : undefined
                 }
                 className={
-                  `black-key absolute top-3 h-32 rounded-b-md bg-black text-zinc-100 ` +
+                  `black-key absolute top-3 h-36 rounded-b-md bg-black text-zinc-100 ` +
                   `border border-zinc-800 hover:bg-zinc-900 active:bg-black ` +
                   `disabled:opacity-40 disabled:bg-black disabled:text-zinc-300 disabled:border-zinc-800/80 disabled:cursor-not-allowed ` +
-                  `pointer-events-auto z-10 ` +
+                  `pointer-events-auto z-10 touch-manipulation ` +
                   (flashBad ? "key-flash-bad border-2 border-rose-400" : "")
                 }
                 style={

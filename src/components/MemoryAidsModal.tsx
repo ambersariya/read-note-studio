@@ -21,13 +21,13 @@ export function MemoryAidsModal() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-zinc-400 hover:text-zinc-200 transition-colors"
+        className="p-2.5 -my-1 rounded-lg text-zinc-200 hover:bg-white/5 transition-colors touch-manipulation"
         title="Memory aids"
         type="button"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4"
+          className="h-5 w-5"
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -75,13 +75,13 @@ export function MemoryAidsModal() {
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 text-zinc-400 hover:text-zinc-200 transition-colors rounded-md hover:bg-zinc-800/60"
-                type="button"
-                aria-label="Close"
-              >
+            className="p-2.5 text-zinc-400 hover:text-zinc-200 transition-colors rounded-md hover:bg-zinc-800/60 touch-manipulation"
+            type="button"
+            aria-label="Close"
+          >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  className="h-6 w-6"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                   aria-hidden="true"
