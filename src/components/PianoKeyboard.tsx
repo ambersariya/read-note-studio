@@ -47,7 +47,7 @@ export function PianoKeyboard({
 
   const pianoMidi = useMemo(() => {
     // On desktop/tablet, show an extra octave of context on each side (but not full 88 keys)
-    const padding = isWide ? 12 : 0;
+    const padding = isWide ? 16 : 0;
     let min = Math.max(0, minMidi - padding);
     while (isBlackKey(min) && min > 0) min--;
     let max = Math.min(127, maxMidi + padding);
