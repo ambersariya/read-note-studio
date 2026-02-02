@@ -89,7 +89,7 @@ export function PianoKeyboard({
   return (
     <div>
       {/* Piano Container - scrollable on mobile, fixed height */}
-      <div className="relative overflow-x-auto overflow-y-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-2 md:border md:border-zinc-800 h-48">
+      <div className="relative overflow-x-auto overflow-y-hidden md:rounded-lg bg-transparent md:bg-zinc-900 md:p-2 md:border md:border-zinc-800 h-52 md:h-52">
         <div className="piano-keyboard relative flex pb-safe h-full min-w-full">
           {/* White keys */}
           <div className="flex flex-1">
