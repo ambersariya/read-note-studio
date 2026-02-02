@@ -141,7 +141,7 @@ export function PianoKeyboard({
                     : undefined
                 }
                 className={
-                  `black-key absolute top-3 h-36 rounded-b-md bg-black text-zinc-100 ` +
+                  `black-key absolute top-3 h-44 rounded-b-md bg-black text-zinc-100 ` +
                   `border border-zinc-800 hover:bg-zinc-900 active:bg-black ` +
                   `disabled:opacity-40 disabled:bg-black disabled:text-zinc-300 disabled:border-zinc-800/80 disabled:cursor-not-allowed ` +
                   `pointer-events-auto z-10 touch-manipulation ` +
