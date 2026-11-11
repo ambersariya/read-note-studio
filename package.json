@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit --incremental false",
+    "test": "jest"
   },
   "dependencies": {
     "next": "^16.1.6",

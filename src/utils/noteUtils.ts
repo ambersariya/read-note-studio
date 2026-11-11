@@ -1,7 +1,9 @@
-import type { AccidentalPref, Note, NoteStats, PitchSpelling, StatsMap } from "../types";
+import type { AccidentalPref, KeySig, Note, NoteStats, PitchSpelling, StatsMap } from "../types";
+
+import { KEY_SIGS } from "./constants";
 
 export const DEFAULT_STATS: NoteStats = { seen: 0, correct: 0, wrong: 0, emaAcc: 0.5 };
-export const STATS_STORAGE_KEY = "piano_flashcards_stats_v1";
+export { loadStats, saveStats, STATS_STORAGE_KEY } from "./storage";
 
 // --- Pitch spelling helpers ---
 const SHARP_NAMES: Record<number, PitchSpelling> = {
@@ -48,8 +50,35 @@ export function spellMidi(midi: number, pref: AccidentalPref): PitchSpelling {
   return pref === "flats" ? FLAT_NAMES[pc] : SHARP_NAMES[pc];
 }
 
+const NATURAL_PITCHES = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const LETTERS: PitchSpelling["letter"][] = ["C", "D", "E", "F", "G", "A", "B"];
+const SHARP_ORDER: PitchSpelling["letter"][] = ["F", "C", "G", "D", "A", "E", "B"];
+const FLAT_ORDER: PitchSpelling["letter"][] = ["B", "E", "A", "D", "G", "C", "F"];
+
+function keySpellings(keySig: KeySig): PitchSpelling[] {
+  const order = keySig.fifths >= 0 ? SHARP_ORDER : FLAT_ORDER;
+  const altered = order.slice(0, Math.abs(keySig.fifths));
+  return LETTERS.map((letter) => ({
+    letter,
+    accidental: altered.includes(letter) ? (keySig.fifths >= 0 ? "#" : "b") : "",
+  }));
+}
+
+function pitchClassForSpelling(spelling: PitchSpelling): number {
+  const alteration = spelling.accidental === "#" ? 1 : spelling.accidental === "b" ? -1 : 0;
+  return midiToPitchClass(NATURAL_PITCHES[spelling.letter] + alteration);
+}
+
+export function noteForMidi(midi: number, keySig: KeySig): Note {
+  const spelling = keySpellings(keySig).find((candidate) => pitchClassForSpelling(candidate) === midiToPitchClass(midi))
+    ?? spellMidi(midi, keySig.pref);
+  const alteration = spelling.accidental === "#" ? 1 : spelling.accidental === "b" ? -1 : 0;
+  const octave = (midi - NATURAL_PITCHES[spelling.letter] - alteration) / 12 - 1;
+  return { midi, spelling, octave };
+}
+
 export function noteLabel(note: Note): string {
-  return `${note.spelling.letter}${note.spelling.accidental}${midiToOctave(note.midi)}`;
+  return `${note.spelling.letter}${note.spelling.accidental}${note.octave}`;
 }
 
 export type NoteNaming = "english" | "solfege" | "german";
@@ -69,52 +98,34 @@ function baseNameForNaming(letter: PitchSpelling["letter"], accidental: PitchSpe
   }
 
   if (naming === "german") {
-    if (letter === "B" && accidental === "") return "H";
-    if (letter === "B" && accidental === "b") return "B";
+    if (letter === "B") return accidental === "b" ? "B" : "H";
   }
 
   return letter;
 }
 
-export function noteLabelWithNaming(note: Note, naming: NoteNaming): string {
-  const base = baseNameForNaming(note.spelling.letter, note.spelling.accidental, naming);
-  const acc = naming === "german" && note.spelling.letter === "B" && note.spelling.accidental === ""
+export function noteNameWithNaming(spelling: PitchSpelling, naming: NoteNaming): string {
+  const base = baseNameForNaming(spelling.letter, spelling.accidental, naming);
+  const acc = naming === "german" && spelling.letter === "B" && spelling.accidental === "b"
     ? ""
-    : note.spelling.accidental;
-  const oct = midiToOctave(note.midi);
-  return `${base}${acc}${oct}`;
+    : spelling.accidental;
+  return `${base}${acc}`;
+}
+
+export function noteLabelWithNaming(note: Note, naming: NoteNaming): string {
+  return `${noteNameWithNaming(note.spelling, naming)}${note.octave}`;
 }
 
 export function vexKeyForNote(note: Note): string {
   // VexFlow key format: "c#/4" etc.
   const l = note.spelling.letter.toLowerCase();
   const acc = note.spelling.accidental;
-  const oct = midiToOctave(note.midi);
+  const oct = note.octave;
   return `${l}${acc}/${oct}`;
 }
 
 export function statsKey(midi: number): string {
   return String(midi);
-}
-
-export function loadStats(): StatsMap {
-  try {
-    const raw = window.localStorage.getItem(STATS_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as StatsMap;
-    if (!parsed || typeof parsed !== "object") return {};
-    return parsed;
-  } catch {
-    return {};
-  }
-}
-
-export function saveStats(stats: StatsMap): void {
-  try {
-    window.localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats));
-  } catch {
-    // ignore
-  }
 }
 
 export function getStats(stats: StatsMap, midi: number): NoteStats {
@@ -154,12 +165,11 @@ export function weightedPick(items: number[], weights: number[]): number {
   return items[items.length - 1];
 }
 
-export function buildMidiRange(minMidi: number, maxMidi: number, includeAccidentals: boolean): number[] {
+export function buildMidiRange(minMidi: number, maxMidi: number, includeChromatic: boolean, keySig: KeySig = KEY_SIGS[0]): number[] {
+  const allowedPitchClasses = keySpellings(keySig).map(pitchClassForSpelling);
   const out: number[] = [];
-  for (let m = minMidi; m <= maxMidi; m++) {
-    const pc = midiToPitchClass(m);
-    const isNatural = pc === 0 || pc === 2 || pc === 4 || pc === 5 || pc === 7 || pc === 9 || pc === 11;
-    if (includeAccidentals || isNatural) out.push(m);
+  for (let midi = minMidi; midi <= maxMidi; midi++) {
+    if (includeChromatic || allowedPitchClasses.includes(midiToPitchClass(midi))) out.push(midi);
   }
   return out;
 }
@@ -181,7 +191,6 @@ export function getBlackKeyIndex(midi: number): number {
   return -1; // Not a black key
 }
 
-export function whiteKeyLabel(midi: number, pref: AccidentalPref, naming: NoteNaming = "english"): string {
-  const spelling = spellMidi(midi, pref);
-  return baseNameForNaming(spelling.letter, spelling.accidental, naming);
+export function whiteKeyLabel(midi: number, keySig: KeySig, naming: NoteNaming = "english"): string {
+  return noteNameWithNaming(noteForMidi(midi, keySig).spelling, naming);
 }

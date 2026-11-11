@@ -10,6 +10,7 @@ export type PitchSpelling = {
 export type Note = {
   midi: number; // 0-127
   spelling: PitchSpelling;
+  octave: number; // written octave, which can differ from the sounding MIDI octave
 };
 
 export type Feedback =
@@ -31,6 +32,7 @@ export type KeySig = {
   label: string;
   vex: string;
   pref: AccidentalPref;
+  fifths: number; // positive for sharps, negative for flats
 };
 
 export type NoteStats = {

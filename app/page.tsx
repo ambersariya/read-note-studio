@@ -1,20 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import App from "../src/App";
+import nextDynamic from "next/dynamic";
 
-export const dynamic = 'force-static';
+const PracticeApp = nextDynamic(() => import("../src/App"), {
+  ssr: false,
+  loading: () => <div role="status">Loading ReadNote Studio…</div>,
+});
+
+export const dynamic = "force-static";
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-  return <App />;
+  return <PracticeApp />;
 }

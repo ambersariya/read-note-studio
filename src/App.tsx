@@ -7,7 +7,7 @@ import {
   buildMidiRange,
   loadStats,
   saveStats,
-  spellMidi,
+  noteForMidi,
   updateStats,
   weightedPick,
   weightForMidi,
@@ -18,25 +18,13 @@ import { StaveDisplay } from "./components/StaveDisplay";
 import { PianoKeyboard } from "./components/PianoKeyboard";
 import { SettingsDrawer } from "./components/SettingsDrawer";
 import { MemoryAidsModal } from "./components/MemoryAidsModal";
-
-type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+import { loadSettings, saveSettings, type DifficultyLevel } from "./utils/storage";
 
 const APP_VERSION = "1.3.0";
-const SETTINGS_STORAGE_KEY = "readnote_studio_settings_v1";
 const DEFAULT_FEEDBACK_TEXT = "Play the note you see on the staff — no text hints.";
 
-function loadSettings() {
-  try {
-    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
 export default function App() {
-  const savedSettings = loadSettings();
+  const [savedSettings] = useState(loadSettings);
   
   const [difficulty, setDifficulty] = useState<DifficultyLevel>(savedSettings?.difficulty ?? "beginner");
   const [showHints, setShowHints] = useState<boolean>(savedSettings?.showHints ?? false);
@@ -51,15 +39,15 @@ export default function App() {
   const [autoAdvance, setAutoAdvance] = useState<boolean>(savedSettings?.autoAdvance ?? true);
   const [visualHint, setVisualHint] = useState<boolean>(savedSettings?.visualHint ?? true);
 
-  // Derive includeAccidentals from difficulty level
-  const includeAccidentals = useMemo(() => {
+  // Beginner practice stays within the selected key; higher levels include chromatic notes.
+  const includeChromatic = useMemo(() => {
     if (difficulty === "beginner") return false;
     return true;
   }, [difficulty]);
   const [stats, setStats] = useState<StatsMap>(() => loadStats());
   const [current, setCurrent] = useState<Note>(() => {
-    const midi = 60;
-    return { midi, spelling: spellMidi(midi, KEY_SIGS[0].pref) };
+    const midi = buildMidiRange(range.minMidi, range.maxMidi, includeChromatic, keySig)[0];
+    return noteForMidi(midi, keySig);
   });
   const [score, setScore] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
@@ -86,8 +74,8 @@ export default function App() {
   const visualHintTimerRef = useRef<number | null>(null);
 
   const midiChoices = useMemo(
-    () => buildMidiRange(range.minMidi, range.maxMidi, includeAccidentals),
-    [range, includeAccidentals]
+    () => buildMidiRange(range.minMidi, range.maxMidi, includeChromatic, keySig),
+    [range, includeChromatic, keySig]
   );
 
   const lastRangeByClef = useRef<{ treble: string; bass: string }>({
@@ -121,24 +109,7 @@ export default function App() {
 
   // Persist settings
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        SETTINGS_STORAGE_KEY,
-        JSON.stringify({
-          rangeId,
-          clef,
-          keySigId,
-          difficulty,
-          showHints,
-          showKeyLabels,
-          noteNaming,
-          autoAdvance,
-          visualHint,
-        })
-      );
-    } catch {
-      // ignore
-    }
+    saveSettings({ rangeId, clef, keySigId, difficulty, showHints, showKeyLabels, noteNaming, autoAdvance, visualHint });
   }, [rangeId, clef, keySigId, difficulty, showHints, showKeyLabels, noteNaming, autoAdvance, visualHint]);
 
   // Clear timers on unmount
@@ -189,7 +160,7 @@ export default function App() {
     }
 
     const midi = weightedPick(choices, adjustedWeights);
-    return { midi, spelling: spellMidi(midi, keySig.pref) };
+    return noteForMidi(midi, keySig);
   }
 
   // When settings change, refresh the exercise note
@@ -532,9 +503,8 @@ export default function App() {
             minMidi={range.minMidi}
             maxMidi={range.maxMidi}
             currentNote={current}
-            includeAccidentals={includeAccidentals}
             midiChoices={midiChoices}
-            keySigPref={keySig.pref}
+            keySig={keySig}
             showHints={showHints}
             showKeyLabels={showKeyLabels}
             noteNaming={noteNaming}

@@ -1,6 +1,6 @@
 import type { Clef, KeySig, RangePreset, Note } from "../types";
 import { KEY_SIGS, RANGES } from "../utils/constants";
-import { noteLabel, spellMidi } from "../utils/noteUtils";
+import { noteLabel, noteForMidi } from "../utils/noteUtils";
 
 type DifficultyLevel = "beginner" | "intermediate" | "advanced";
 
@@ -31,14 +31,11 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({
   rangeId,
-  clef: _clef,
   keySigId,
-  difficulty: _difficulty,
   showHints,
   showKeyLabels,
   currentNote,
   range,
-  keySig,
   onRangeChange,
   onKeySigChange,
   onShowHintsChange,
@@ -169,10 +166,7 @@ export function SettingsPanel({
           <div className="mt-1">{noteLabel(currentNote)}</div>
           <div className="mt-2 text-zinc-400">
             Range:{" "}
-            {noteLabel({ midi: range.minMidi, spelling: spellMidi(range.minMidi, keySig.pref) })}–{noteLabel({
-              midi: range.maxMidi,
-              spelling: spellMidi(range.maxMidi, keySig.pref),
-            })}
+            {noteLabel(noteForMidi(range.minMidi, KEY_SIGS[0]))}–{noteLabel(noteForMidi(range.maxMidi, KEY_SIGS[0]))}
           </div>
         </div>
       )}

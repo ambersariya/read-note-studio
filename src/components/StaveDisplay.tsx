@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import Flow, { type Tickable } from "vexflow";
 import type { Clef, KeySig, Note } from "../types";
-import { vexKeyForNote } from "../utils/noteUtils";
+import { noteForMidi, noteLabel, vexKeyForNote } from "../utils/noteUtils";
 
 const STROKE = "#0f172a"; // dark stroke for visibility on light panel
 
@@ -87,17 +87,12 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
       .setStyle({ strokeStyle: STROKE, fillStyle: STROKE })
       .setStave(targetStave);
 
-    // If our key string includes an accidental, add it explicitly so it's always shown.
-    if (note.spelling.accidental === "#" || note.spelling.accidental === "b") {
-      staveNote.addModifier(new Accidental(note.spelling.accidental));
-    }
-
     const trebleNotes: Tickable[] = [];
     const bassNotes: Tickable[] = [];
 
     // Display ghost note (the wrong note played) in red to show error distance
     if (playedMidi !== null && playedMidi !== note.midi) {
-      const wrongSpelling = { midi: playedMidi, spelling: { ...note.spelling } };
+      const wrongSpelling = noteForMidi(playedMidi, keySig);
       const wrongClef = clefForMidi(playedMidi);
       const wrongStave = wrongClef === "treble" ? trebleStave : bassStave;
 
@@ -135,6 +130,8 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
     voiceBass.setMode(Flow.Voice.Mode.SOFT);
     voiceBass.addTickables(bassNotes.length ? bassNotes : [new GhostNote("q")]);
 
+    Accidental.applyAccidentals([voiceTreble, voiceBass], keySig.vex);
+
     new Formatter().joinVoices([voiceTreble, voiceBass]).format([voiceTreble, voiceBass], 300);
     voiceTreble.draw(context, trebleStave);
     voiceBass.draw(context, bassStave);
@@ -142,8 +139,8 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
 
   useEffect(() => {
     renderStave();
+    const el = containerRef.current;
     return () => {
-      const el = containerRef.current;
       if (el) el.innerHTML = "";
     };
   }, [renderStave]);
@@ -170,7 +167,7 @@ export function StaveDisplay({ note, clef, keySig, flashState = "neutral", playe
         ? "animate-pop-success border-2 border-emerald-400"
         : "";
 
-  const describeNote = (n: Note) => `${n.spelling.letter}${n.spelling.accidental || ""} (${n.midi})`;
+  const describeNote = (n: Note) => `${noteLabel(n)} (MIDI ${n.midi})`;
   const ariaLabel = `Grand staff showing ${describeNote(note)} in ${clef} clef, key of ${keySig.label}.`;
 
   return (

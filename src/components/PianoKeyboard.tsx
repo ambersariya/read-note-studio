@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import type { AccidentalPref, Note } from "../types";
-import { isBlackKey, midiToOctave, noteLabelWithNaming, spellMidi, whiteKeyLabel, type NoteNaming } from "../utils/noteUtils";
+import type { KeySig, Note } from "../types";
+import { isBlackKey, noteLabelWithNaming, noteForMidi, whiteKeyLabel, type NoteNaming } from "../utils/noteUtils";
 import { ensureAudioStarted, playThud } from "../utils/audio";
 
 interface PianoKeyboardProps {
   minMidi: number;
   maxMidi: number;
   currentNote: Note;
-  includeAccidentals: boolean;
   midiChoices: number[];
-  keySigPref: AccidentalPref;
+  keySig: KeySig;
   showHints: boolean;
   onKeyPress: (midi: number) => void;
   flashMidi?: number | null;
@@ -25,38 +24,27 @@ export function PianoKeyboard({
   minMidi,
   maxMidi,
   currentNote,
-  includeAccidentals,
   midiChoices,
-  keySigPref,
-  showHints,
+  keySig,
   noteNaming,
   onKeyPress,
   flashMidi = null,
   flashState = "neutral",
-  hintForced = false,
   showKeyLabels,
 }: PianoKeyboardProps) {
-  const [isWide, setIsWide] = useState(false);
   const [blockedMidi, setBlockedMidi] = useState<number | null>(null);
   const [idleLevel, setIdleLevel] = useState<0 | 1 | 2>(0);
-  const lastInteractionRef = useRef<number>(Date.now());
+  const lastInteractionRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(0);
 
-  const registerInteraction = () => {
-    lastInteractionRef.current = Date.now();
+  const registerInteraction = (now: number) => {
+    lastInteractionRef.current = now;
     setIdleLevel(0);
   };
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const update = () => setIsWide(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
+    lastInteractionRef.current = Date.now();
     const id = window.setInterval(() => {
       const idleFor = Date.now() - lastInteractionRef.current;
       if (idleFor >= 6000) setIdleLevel(2);
@@ -209,8 +197,8 @@ export function PianoKeyboard({
 
   const labelOpacity = showKeyLabels ? (idleLevel === 2 ? 1 : idleLevel === 1 ? 0.45 : 0.85) : 0;
 
-  const handlePress = async (midi: number, enabled: boolean) => {
-    registerInteraction();
+  const handlePress = async (midi: number, enabled: boolean, now: number) => {
+    registerInteraction(now);
     if (!enabled) {
       setBlockedMidi(midi);
       window.setTimeout(() => setBlockedMidi((prev) => (prev === midi ? null : prev)), 220);
@@ -224,16 +212,16 @@ export function PianoKeyboard({
   const renderWhiteKey = (midi: number) => {
     const enabled = isInAnswerSet(midi);
     const flashBad = flashState === "bad" && flashMidi === midi;
-    const label = whiteKeyLabel(midi, keySigPref, noteNaming);
+    const label = whiteKeyLabel(midi, keySig, noteNaming);
     const showMiddleC = midi === 60;
     const isBlocked = blockedMidi === midi;
 
-    const keyAriaLabel = showKeyLabels ? `${label}${midiToOctave(midi)}` : midi === 60 ? "Middle C anchor" : "Piano key";
+    const keyAriaLabel = showKeyLabels ? noteLabelWithNaming(noteForMidi(midi, keySig), noteNaming) : midi === 60 ? "Middle C anchor" : "Piano key";
     return (
       <button
         key={midi}
         type="button"
-        onClick={() => void handlePress(midi, enabled)}
+        onClick={() => void handlePress(midi, enabled, Date.now())}
         aria-pressed={midi === currentNote.midi}
         aria-label={keyAriaLabel}
         title={showKeyLabels ? keyAriaLabel : undefined}
@@ -260,9 +248,9 @@ export function PianoKeyboard({
   };
 
   const renderBlackKey = (midi: number, cssIndex: number) => {
-    const enabled = includeAccidentals && isInAnswerSet(midi);
+    const enabled = isInAnswerSet(midi);
     const flashBad = flashState === "bad" && flashMidi === midi;
-    const label = noteLabelWithNaming({ midi, spelling: spellMidi(midi, keySigPref) }, noteNaming);
+    const label = noteLabelWithNaming(noteForMidi(midi, keySig), noteNaming);
     const isBlocked = blockedMidi === midi;
 
     const keyAriaLabel = showKeyLabels ? label : midi === 60 ? "Middle C anchor" : "Black piano key";
@@ -270,7 +258,7 @@ export function PianoKeyboard({
       <button
         key={midi}
         type="button"
-        onClick={() => void handlePress(midi, enabled)}
+        onClick={() => void handlePress(midi, enabled, Date.now())}
         aria-pressed={midi === currentNote.midi}
         aria-label={keyAriaLabel}
         title={showKeyLabels ? label : undefined}
